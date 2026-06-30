@@ -1,3 +1,13 @@
+## Writing
+
+Audience: integration engineers who want to integrate fast, not read prose.
+
+- Concise. Straight to the point. Sacrifice grammar for concision.
+- No filler, no decorative labels, no cutesy/witty asides. Cut any sentence that doesn't help someone integrate.
+- State the rule, then move on. Tables, examples, and code over paragraphs.
+- "Geoplan" (not "GeoPlan").
+- Don't frame the docs as tasks assigned to ETP/Samooha or prescribe a Geoplan-owned source schema. Providers expose existing master data; Geoplan owns adaptation.
+
 ## Development
 
 When starting the dev server, use background mode:

@@ -1,40 +1,62 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
-hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
-  actions:
-    - text: Example Guide
-      link: /guides/example/
-      icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+title: Geoplan RFID integration
+description: Integration reference for syncing ETP POS and Samooha product masters to the Geoplan RFID middleware.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Badge, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
-## Next steps
+<Badge text="Working draft · master-data sync" variant="caution" />
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+Sync ETP POS and Samooha product masters into the Geoplan RFID middleware. Each provider exposes its existing master-data source in its native shape. Geoplan builds the source-specific adapter, stores a local copy, and owns every EPC/TID association.
+
+## Partner guides
+
+<CardGrid>
+  <LinkCard
+    title="ETP POS"
+    href="/etp-pos/"
+    description="Product catalog access, ownership, and the Geoplan adapter boundary."
+  />
+  <LinkCard
+    title="Samooha"
+    href="/samooha/"
+    description="Warehouse product catalog access, ownership, and the Geoplan adapter boundary."
+  />
+</CardGrid>
+
+## How it works
+
+ETP POS and Samooha can use different endpoints, fields, response structures, pagination, authentication, and change-tracking conventions. Geoplan reads each source and maps it to the middleware's internal model; providers never call Geoplan for master-data sync.
+
+<Steps>
+
+1. **The provider exposes its existing product master.**
+
+   The source remains authoritative and keeps its native structure.
+
+2. **Geoplan retrieves and maps the source.**
+
+   A provider-specific adapter handles access, pagination, change tracking, and mapping.
+
+3. **The RFID layer adds EPC/TID associations.**
+
+   These associations remain in Geoplan and do not change the provider's product model.
+
+</Steps>
+
+![Geoplan RFID middleware architecture connecting ETP POS and Samooha to store and warehouse RFID operations](../../assets/architecture-diagram.png)
+
+## Reference
+
+<CardGrid>
+  <LinkCard
+    title="Source access & limits"
+    href="/contract/access/"
+    description="Provider-specific authentication, connectivity, and operational limits."
+  />
+  <LinkCard
+    title="Source data intake"
+    href="/contract/source-data/"
+    description="Native source formats, adapter inputs, mapping, and retrieval behavior."
+  />
 </CardGrid>

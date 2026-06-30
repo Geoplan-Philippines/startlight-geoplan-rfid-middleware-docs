@@ -1,0 +1,55 @@
+---
+title: Samooha integration
+description: Samooha product master-data sync with the Geoplan RFID middleware.
+---
+
+import { Aside, Badge, Card, CardGrid, Steps } from '@astrojs/starlight/components';
+
+<Badge text="Working draft · master data only" variant="caution" />
+
+Expose the Samooha product catalog so warehouse records and RFID reads resolve to the same SKU.
+
+Samooha exposes its product master data in its existing source format. Geoplan adapts that data to the middleware's internal model, stores a separate local copy, then adds EPC/TID associations in the RFID layer. Samooha does not need to adopt a Geoplan-defined response schema or add EPC fields to its product model.
+
+## Data flow
+
+<Steps>
+
+1. **Samooha exposes its existing master data.**
+
+2. **Geoplan pulls, maps, and stores the catalog.**
+
+3. **The RFID layer adds EPC/TID associations.**
+
+</Steps>
+
+## Responsibilities
+
+<CardGrid>
+  <Card title="Samooha owns">
+    Master-data accuracy, approved access, credentials, and source availability.
+  </Card>
+  <Card title="Geoplan owns">
+    Source-data mapping, polling, local storage, checkpoints, and EPC/TID associations.
+  </Card>
+</CardGrid>
+
+## Source access
+
+<Aside type="note" title="Provider-defined source">
+  **Hosted by Samooha. Read by Geoplan.** The access method and source shape remain provider-defined.
+</Aside>
+
+Samooha only needs to make its master data available and document how Geoplan can access it. Existing field names, nesting, response envelopes, pagination, and change-tracking conventions can remain as they are; Geoplan owns the source-specific adapter.
+
+## Connection
+
+| Item | Value |
+| --- | --- |
+| Access details | Samooha provides the endpoint or other supported access method for each environment. |
+| Connectivity | Use Samooha's existing approved secure access method. |
+| Authentication | Use Samooha's supported server-to-server authentication method. |
+| Data format | Samooha's existing master-data shape; no Geoplan-specific response schema required. |
+| Mapping | Geoplan maps the Samooha source fields and retrieval behavior to its internal model. |
+
+See [Source data intake](/contract/source-data/) for the shared adapter boundary and [Source access & limits](/contract/access/) for connection details.

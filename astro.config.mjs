@@ -4,21 +4,39 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	redirects: {
+		'/contract/product-endpoint': '/contract/source-data',
+	},
 	integrations: [
 		starlight({
-			title: 'My Docs',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			title: 'Geoplan RFID Middleware',
+			description: 'ETP POS and Samooha master-data integration reference for the Geoplan RFID middleware.',
+			tagline: 'Provider master-data integration reference',
+			logo: {
+				src: './src/assets/geoplan-logo.png',
+				alt: 'Geoplan',
+			},
+			favicon: '/favicon.png',
+			lastUpdated: true,
+			credits: false,
 			sidebar: [
+				{
+					label: 'Start here',
+					items: [{ label: 'Overview', link: '/' }],
+				},
 				{
 					label: 'Guides',
 					items: [
-						// Each item here is one entry in the navigation menu.
-						{ label: 'Example Guide', slug: 'guides/example' },
+						{ label: 'ETP POS', slug: 'etp-pos', badge: { text: 'Draft', variant: 'caution' } },
+						{ label: 'Samooha', slug: 'samooha', badge: { text: 'Draft', variant: 'caution' } },
 					],
 				},
 				{
 					label: 'Reference',
-					items: [{ autogenerate: { directory: 'reference' } }],
+					items: [
+						{ label: 'Source access & limits', slug: 'contract/access' },
+						{ label: 'Source data intake', slug: 'contract/source-data' },
+					],
 				},
 			],
 		}),

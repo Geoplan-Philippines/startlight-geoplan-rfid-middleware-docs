@@ -1,49 +1,47 @@
-# Starlight Starter Kit: Basics
+# Geoplan RFID integration docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Starlight documentation for ETP POS and Samooha engineers integrating product master data with the Geoplan RFID middleware.
 
-```
-npm create astro@latest -- --template starlight
-```
+Current published scope: **master-data sync only**.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Content map
 
-## 🚀 Project Structure
+- `/` — integration overview and architecture
+- `/etp-pos/` — ETP POS source ownership, access, and Geoplan mapping boundary
+- `/samooha/` — Samooha source ownership, access, and Geoplan mapping boundary
+- `/contract/access/` — provider-specific source access and operational limits
+- `/contract/source-data/` — provider-native data intake and Geoplan adapter responsibilities
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+Providers keep their existing master-data shapes. Shared guidance describes the adapter boundary; it does not define a schema that ETP POS or Samooha must implement.
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+## Development
+
+Install dependencies:
+
+```sh
+npm install
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Start Astro in background mode:
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+```sh
+npm run dev -- --background
+```
 
-Static assets, like favicons, can be placed in the `public/` directory.
+Manage the background server:
 
-## 🧞 Commands
+```sh
+npm run astro -- dev status
+npm run astro -- dev logs
+npm run astro -- dev stop
+```
 
-All commands are run from the root of the project, from a terminal:
+Build the production site:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```sh
+npm run build
+```
 
-## 👀 Want to learn more?
+## Assets
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Source images used by Astro live in `src/assets/` for optimization and fingerprinting. Static favicon output lives in `public/`.
