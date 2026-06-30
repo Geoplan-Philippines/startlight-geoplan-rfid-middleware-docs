@@ -1,0 +1,142 @@
+---
+title: Master Data Sync
+description: Geoplan middleware endpoints for the synced product master.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Geoplan middleware endpoints for the synced product master — `sku`, `gtin`, `productName`, and `epc`/`tid` once associated. All endpoints require [`x-api-key`](/authentication/).
+
+## Base URL
+
+```
+https://rfid-middleware.geoplanph.com/api/v1
+```
+
+<Aside type="caution">Host not yet provisioned. Confirm with Geoplan before integrating.</Aside>
+
+Global prefix `/api`, URI version `v1`. Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on paginated routes). Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+
+## GET /master-data-sync
+
+Paginated, filterable list of synced products. Ordered by `updatedAt` desc. Filters are case-insensitive `contains`.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `page` | int | 1 | ≥ 1 |
+| `limit` | int | 10 | 1–50 |
+| `sku` | string | — | filter |
+| `gtin` | string | — | filter |
+| `productName` | string | — | filter |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    {
+      "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+      "sku": "ZRA-FOO-OLI-40-036815",
+      "gtin": "7067600196000",
+      "productName": "Sport Sandal",
+      "epc": null,
+      "tid": null,
+      "createdAt": "2026-06-20T02:00:00.000Z",
+      "updatedAt": "2026-06-24T01:30:00.000Z"
+    }
+  ],
+  "meta": { "total": 14820, "page": 1, "limit": 10, "lastPage": 1482 }
+}
+```
+
+## GET /master-data-sync/delta
+
+Upserts and deletes since a cursor. For incremental cache updates.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `since` | ISO-8601 | — | omit for full snapshot |
+| `limit` | int | 1000 | 1–1000 |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "cursor": "2026-06-24T08:20:11.512Z",
+    "upserts": [
+      { "sku": "ZRA-FOO-OLI-40-036815", "gtin": "7067600196000", "productName": "Sport Sandal" }
+    ],
+    "deletes": ["LAC-OLD-SKU-001"]
+  }
+}
+```
+
+`cursor` is the query time — pass it as the next `since`. `upserts` are rows changed after `since`; `deletes` are SKUs tombstoned after `since`.
+
+## GET /master-data-sync/status
+
+Recent sync-run outcomes.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `historyLimit` | int | 10 | 1–50 |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "lastRun": { "lastSyncAt": "2026-06-24T08:20:11.512Z", "upserted": 14820, "durationMs": 8423, "status": "SUCCESS" },
+    "history": [
+      { "lastSyncAt": "2026-06-23T02:00:00.000Z", "upserted": 120, "durationMs": 1102, "status": "SUCCESS" }
+    ]
+  }
+}
+```
+
+`status` is `SUCCESS` or `FAILED`. `lastRun` is `null` when no runs exist yet.
+
+## POST /master-data-sync/run
+
+Triggers a sync: pulls product pages from the configured source and upserts by `sku`; items flagged deleted are removed and tombstoned. First run is full; later runs resume from the last successful checkpoint. Geoplan runs this nightly (~00:00 Asia/Manila). Returns `200`.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `lastSyncAt` | ISO-8601 | — | override the stored checkpoint |
+| `full` | bool | false | bypass checkpoint; full import |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "syncMode": "DELTA",
+    "checkpointUsed": "2026-06-27T16:00:00.000Z",
+    "pagesFetched": 1,
+    "totalItems": 100532,
+    "recordsChecked": 10,
+    "recordsSkipped": 100522,
+    "totalFetched": 10,
+    "upserted": 9,
+    "deleted": 1,
+    "durationMs": 423,
+    "lastSyncAt": "2026-06-28T16:00:00.000Z"
+  }
+}
+```
+
+- `syncMode`: `FULL` or `DELTA`.
+- `lastSyncAt` (response): the checkpoint, stored automatically after a successful run.
+- `totalFetched`: deprecated alias of `recordsChecked`.
+
+<Aside type="note">The source today is the mock `mock-master-data.geoplanph.com/api/v1/products` (`MASTER_DATA_SYNC_URL`). A non-2xx from the source on any page returns `503` and the checkpoint is not advanced.</Aside>
+
+## Errors
+
+| status | when |
+| --- | --- |
+| 400 | Invalid query parameter. |
+| 401 | Missing or invalid `x-api-key`. |
+| 429 | Rate limit exceeded (100 req/60s). |
+| 503 | `run` only — source unavailable. |

@@ -1,62 +1,33 @@
 ---
 title: Geoplan RFID integration
-description: Integration reference for syncing ETP POS and Samooha product masters to the Geoplan RFID middleware.
+description: Integration reference for syncing ETP POS and Samooha product masters into the Geoplan RFID middleware.
 ---
 
-import { Badge, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-<Badge text="Working draft · master-data sync" variant="caution" />
-
-Sync ETP POS and Samooha product masters into the Geoplan RFID middleware. Each provider exposes its existing master-data source in its native shape. Geoplan builds the source-specific adapter, stores a local copy, and owns every EPC/TID association.
-
-## Partner guides
+Sync ETP POS and Samooha product masters into the Geoplan RFID middleware. Each provider exposes a read-only feed; Geoplan pulls it nightly and owns every EPC/TID association. Providers never call Geoplan.
 
 <CardGrid>
   <LinkCard
+    title="Authentication"
+    href="/authentication/"
+    description="API key scheme used across the integration."
+  />
+  <LinkCard
+    title="Master Data Sync"
+    href="/master-data-sync/"
+    description="Feed contract, auth, schedule, delta, limits, errors."
+  />
+  <LinkCard
     title="ETP POS"
     href="/etp-pos/"
-    description="Product catalog access, ownership, and the Geoplan adapter boundary."
+    description="POS feed specifics."
   />
   <LinkCard
     title="Samooha"
     href="/samooha/"
-    description="Warehouse product catalog access, ownership, and the Geoplan adapter boundary."
+    description="WMS feed specifics."
   />
 </CardGrid>
-
-## How it works
-
-ETP POS and Samooha can use different endpoints, fields, response structures, pagination, authentication, and change-tracking conventions. Geoplan reads each source and maps it to the middleware's internal model; providers never call Geoplan for master-data sync.
-
-<Steps>
-
-1. **The provider exposes its existing product master.**
-
-   The source remains authoritative and keeps its native structure.
-
-2. **Geoplan retrieves and maps the source.**
-
-   A provider-specific adapter handles access, pagination, change tracking, and mapping.
-
-3. **The RFID layer adds EPC/TID associations.**
-
-   These associations remain in Geoplan and do not change the provider's product model.
-
-</Steps>
 
 ![Geoplan RFID middleware architecture connecting ETP POS and Samooha to store and warehouse RFID operations](../../assets/architecture-diagram.png)
-
-## Reference
-
-<CardGrid>
-  <LinkCard
-    title="Source access & limits"
-    href="/contract/access/"
-    description="Provider-specific authentication, connectivity, and operational limits."
-  />
-  <LinkCard
-    title="Source data intake"
-    href="/contract/source-data/"
-    description="Native source formats, adapter inputs, mapping, and retrieval behavior."
-  />
-</CardGrid>

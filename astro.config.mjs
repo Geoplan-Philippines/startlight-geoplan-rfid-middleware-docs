@@ -5,7 +5,9 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
 	redirects: {
-		'/contract/product-endpoint': '/contract/source-data',
+		'/contract/product-endpoint': '/master-data-sync',
+		'/contract/source-data': '/master-data-sync',
+		'/contract/access': '/master-data-sync',
 	},
 	integrations: [
 		starlight({
@@ -22,20 +24,22 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Start here',
-					items: [{ label: 'Overview', link: '/' }],
-				},
-				{
-					label: 'Guides',
 					items: [
-						{ label: 'ETP POS', slug: 'etp-pos', badge: { text: 'Draft', variant: 'caution' } },
-						{ label: 'Samooha', slug: 'samooha', badge: { text: 'Draft', variant: 'caution' } },
+						{ label: 'Overview', link: '/' },
+						{ label: 'Authentication', slug: 'authentication' },
 					],
 				},
 				{
 					label: 'Reference',
 					items: [
-						{ label: 'Source access & limits', slug: 'contract/access' },
-						{ label: 'Source data intake', slug: 'contract/source-data' },
+						{ label: 'Master Data Sync', slug: 'master-data-sync' },
+					],
+				},
+				{
+					label: 'Providers',
+					items: [
+						{ label: 'ETP POS', slug: 'etp-pos' },
+						{ label: 'Samooha', slug: 'samooha' },
 					],
 				},
 			],

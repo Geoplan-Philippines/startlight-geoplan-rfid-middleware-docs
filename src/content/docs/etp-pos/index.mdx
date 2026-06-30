@@ -1,55 +1,16 @@
 ---
-title: ETP POS integration
-description: ETP POS product master-data sync with the Geoplan RFID middleware.
+title: ETP POS
+description: ETP POS master-data feed specifics for the Geoplan RFID middleware.
 ---
 
-import { Aside, Badge, Card, CardGrid, Steps } from '@astrojs/starlight/components';
+ETP POS is the point-of-sale source. Geoplan syncs its product master so barcode and RFID reads resolve to the same SKU.
 
-<Badge text="Working draft · master data only" variant="caution" />
+Geoplan's middleware sync API and auth: see **[Master Data Sync](/master-data-sync/)** and **[Authentication](/authentication/)**. ETP-specific values below.
 
-Expose the ETP POS product catalog so barcode transactions and RFID reads resolve to the same SKU.
+## ETP POS specifics
 
-ETP POS exposes its product master data in its existing source format. Geoplan adapts that data to the middleware's internal model, stores a local copy, then adds EPC/TID associations in the RFID layer. ETP POS does not need to adopt a Geoplan-defined response schema or add EPC fields to its product model.
-
-## Data flow
-
-<Steps>
-
-1. **ETP POS exposes its existing master data.**
-
-2. **Geoplan pulls, maps, and stores the catalog.**
-
-3. **The RFID layer adds EPC/TID associations.**
-
-</Steps>
-
-## Responsibilities
-
-<CardGrid>
-  <Card title="ETP POS owns">
-    Master-data accuracy, approved access, credentials, and source availability.
-  </Card>
-  <Card title="Geoplan owns">
-    Source-data mapping, polling, local storage, checkpoints, and EPC/TID associations.
-  </Card>
-</CardGrid>
-
-## Source access
-
-<Aside type="note" title="Provider-defined source">
-  **Hosted by ETP POS. Read by Geoplan.** The access method and source shape remain provider-defined.
-</Aside>
-
-ETP POS only needs to make its master data available and document how Geoplan can access it. Existing field names, nesting, response envelopes, pagination, and change-tracking conventions can remain as they are; Geoplan owns the source-specific adapter.
-
-## Connection
-
-| Item | Value |
+| | |
 | --- | --- |
-| Access details | ETP provides the endpoint or other supported access method for each environment. |
-| Connectivity | Use ETP POS's existing approved secure access method. |
-| Authentication | Use ETP POS's supported server-to-server authentication method. |
-| Data format | ETP POS's existing master-data shape; no Geoplan-specific response schema required. |
-| Mapping | Geoplan maps the ETP POS source fields and retrieval behavior to its internal model. |
-
-See [Source data intake](/contract/source-data/) for the shared adapter boundary and [Source access & limits](/contract/access/) for connection details.
+| Source | ETP POS product master — access/endpoint to confirm. |
+| Field mapping | ETP source fields → middleware `sku`, `gtin`, `productName` — to confirm. |
+| Contact | ETP POS integration lead. |
