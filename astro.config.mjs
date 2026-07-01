@@ -33,6 +33,8 @@ export default defineConfig({
 					label: 'Reference',
 					items: [
 						{ label: 'Master Data Sync', slug: 'master-data-sync' },
+						{ label: 'Exception handling', slug: 'exceptions' },
+						{ label: 'EPC Scan Processing', slug: 'epc-scan-processing' }
 					],
 				},
 				{

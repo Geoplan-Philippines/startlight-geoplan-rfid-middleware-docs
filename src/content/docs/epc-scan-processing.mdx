@@ -1,0 +1,180 @@
+---
+title: EPC Scan Processing
+description: Geoplan middleware endpoints for recording and managing EPC scan sessions.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Endpoints for opening a scan session, appending EPC reads to it, and completing or cancelling it. All endpoints require [`x-api-key`](/authentication/).
+
+## Base URL
+
+```
+https://rfid-middleware.geoplanph.com/api/v1
+```
+
+<Aside type="caution">Host not yet provisioned. Confirm with Geoplan before integrating.</Aside>
+
+Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on paginated routes). Errors are `{ statusCode, message, error, path, timestamp }`.
+
+## Session status
+
+`OPEN`, `COMPLETED`, or `CANCELLED`. Sessions start `OPEN`. Reads can only be appended, completed, or cancelled while a session is `OPEN`.
+
+## POST /epc-scan-processing/sessions
+
+Opens a new scan session.
+
+| field | type | required | notes |
+| --- | --- | --- | --- |
+| `transactionReference` | string | no | max 120 chars |
+| `deviceId` | string | no | max 120 chars |
+
+```json
+{
+  "statusCode": 201,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "transactionReference": "TXN-00021",
+    "deviceId": "reader-04",
+    "status": "OPEN",
+    "startedAt": "2026-06-24T01:30:00.000Z",
+    "completedAt": null,
+    "uniqueCount": 0,
+    "epcs": []
+  }
+}
+```
+
+## GET /epc-scan-processing/sessions
+
+Paginated, filterable list of sessions.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `status` | enum | — | `OPEN`, `COMPLETED`, or `CANCELLED` |
+| `deviceId` | string | — | filter |
+| `page` | int | 1 | ≥ 1 |
+| `limit` | int | 10 | 1–50 |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    {
+      "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+      "transactionReference": "TXN-00021",
+      "deviceId": "reader-04",
+      "status": "OPEN",
+      "uniqueCount": 3,
+      "startedAt": "2026-06-24T01:30:00.000Z",
+      "completedAt": null
+    }
+  ],
+  "meta": { "total": 8, "page": 1, "limit": 10, "lastPage": 1 }
+}
+```
+
+`uniqueCount` is the count of distinct EPCs in the session, not the count of reads.
+
+## POST /epc-scan-processing/sessions/:sessionId/reads
+
+Appends EPC reads to an open session. EPCs are normalized (trimmed, uppercased) and deduplicated; repeated EPCs in the same call, or across calls, increment a read count rather than duplicating.
+
+| field | type | required | notes |
+| --- | --- | --- | --- |
+| `epcs` | string[] | yes | 1–1000 items, each up to 128 chars |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "transactionReference": "TXN-00021",
+    "deviceId": "reader-04",
+    "status": "OPEN",
+    "startedAt": "2026-06-24T01:30:00.000Z",
+    "completedAt": null,
+    "uniqueCount": 3,
+    "epcs": ["E2000019660800000000C5A1", "E2000019660800000000C5A2", "E2000019660800000000C5A3"]
+  }
+}
+```
+
+Calling this on a session that is not `OPEN` returns `409`.
+
+## GET /epc-scan-processing/sessions/:sessionId
+
+Full detail for one session, including all EPCs read so far.
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "transactionReference": "TXN-00021",
+    "deviceId": "reader-04",
+    "status": "OPEN",
+    "startedAt": "2026-06-24T01:30:00.000Z",
+    "completedAt": null,
+    "uniqueCount": 3,
+    "epcs": ["E2000019660800000000C5A1", "E2000019660800000000C5A2", "E2000019660800000000C5A3"]
+  }
+}
+```
+
+## POST /epc-scan-processing/sessions/:sessionId/complete
+
+Marks an open session complete. Calling this on a session that is not `OPEN` returns `409` rather than silently succeeding — check the session's `status` before retrying.
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "transactionReference": "TXN-00021",
+    "deviceId": "reader-04",
+    "status": "COMPLETED",
+    "startedAt": "2026-06-24T01:30:00.000Z",
+    "completedAt": "2026-06-24T01:45:00.000Z",
+    "uniqueCount": 3,
+    "epcs": ["E2000019660800000000C5A1", "E2000019660800000000C5A2", "E2000019660800000000C5A3"]
+  }
+}
+```
+
+## POST /epc-scan-processing/sessions/:sessionId/cancel
+
+Marks an open session cancelled. Calling this on a session that is not `OPEN` returns `409` rather than silently succeeding — check the session's `status` before retrying.
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "transactionReference": "TXN-00021",
+    "deviceId": "reader-04",
+    "status": "CANCELLED",
+    "startedAt": "2026-06-24T01:30:00.000Z",
+    "completedAt": null,
+    "uniqueCount": 3,
+    "epcs": ["E2000019660800000000C5A1", "E2000019660800000000C5A2", "E2000019660800000000C5A3"]
+  }
+}
+```
+
+## Errors
+
+| status | when |
+| --- | --- |
+| 400 | Invalid body, or `epcs` contains no non-empty values. |
+| 401 | Missing or invalid `x-api-key`. |
+| 404 | Session not found. |
+| 409 | Reads appended, completed, or cancelled on a session that is not `OPEN`. |
+| 429 | Rate limit exceeded (100 req/60s). |

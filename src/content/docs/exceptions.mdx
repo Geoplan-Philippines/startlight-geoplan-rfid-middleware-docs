@@ -1,0 +1,118 @@
+---
+title: Exception Handling
+description: Geoplan middleware endpoints for reading and resolving exceptions.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Exceptions raised by the middleware when something needs manual review — unknown EPC, stock mismatch, failed posting, failed deactivation. All endpoints require [`x-api-key`](/authentication/).
+
+No endpoint creates an exception. The middleware raises them internally; integrators only read and resolve.
+
+## Base URL
+
+```
+https://rfid-middleware.geoplanph.com/api/v1
+```
+
+<Aside type="caution">Host not yet provisioned. Confirm with Geoplan before integrating.</Aside>
+
+Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on paginated routes). Errors are `{ statusCode, message, error, path, timestamp }`.
+
+## Exception types
+
+| type | meaning |
+| --- | --- |
+| `UNKNOWN_EPC` | scanned EPC has no matching master data |
+| `STOCK_MISMATCH` | scanned quantity does not match expected stock |
+| `POSTING_FAILED` | downstream post (sale, transfer) failed |
+| `DEACTIVATION_FAILED` | tag deactivation failed |
+
+## GET /exceptions
+
+Paginated, filterable list of exceptions.
+
+| param | type | default | notes |
+| --- | --- | --- | --- |
+| `type` | enum | — | one of the types above |
+| `status` | enum | — | `OPEN` or `RESOLVED` |
+| `page` | int | 1 | ≥ 1 |
+| `limit` | int | 10 | 1–50 |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    {
+      "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+      "type": "UNKNOWN_EPC",
+      "status": "OPEN",
+      "context": { "epc": "E2000019660800000000C5A1" },
+      "createdAt": "2026-06-24T01:30:00.000Z"
+    }
+  ],
+  "meta": { "total": 42, "page": 1, "limit": 10, "lastPage": 5 }
+}
+```
+
+`context` shape varies by type — carries whatever detail applies (e.g. the unmatched EPC, expected vs. scanned quantity).
+
+## GET /exceptions/:id
+
+Full detail for one exception.
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "type": "UNKNOWN_EPC",
+    "status": "OPEN",
+    "context": { "epc": "E2000019660800000000C5A1" },
+    "resolution": null,
+    "resolvedBy": null,
+    "resolvedAt": null,
+    "createdAt": "2026-06-24T01:30:00.000Z",
+    "updatedAt": "2026-06-24T01:30:00.000Z"
+  }
+}
+```
+
+## POST /exceptions/:id/resolve
+
+Marks an exception resolved.
+
+| field | type | required | notes |
+| --- | --- | --- | --- |
+| `resolution` | string | yes | 1–1000 chars |
+| `resolvedBy` | string | no | max 120 chars |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+    "id": "c0a8011e-1d2f-4a3b-9c4d-5e6f70819203",
+    "type": "UNKNOWN_EPC",
+    "status": "RESOLVED",
+    "context": { "epc": "E2000019660800000000C5A1" },
+    "resolution": "Re-commissioned tag to SKU ZRA-FOO-OLI-40-036815",
+    "resolvedBy": "j.delacruz",
+    "resolvedAt": "2026-06-24T02:10:00.000Z",
+    "createdAt": "2026-06-24T01:30:00.000Z",
+    "updatedAt": "2026-06-24T02:10:00.000Z"
+  }
+}
+```
+
+## Errors
+ 
+| status | when |
+| --- | --- |
+| 400 | Invalid query parameter or body. |
+| 401 | Missing or invalid `x-api-key`. |
+| 404 | Exception not found. |
+| 409 | `resolve` only — exception is already `RESOLVED`. |
+| 429 | Rate limit exceeded (100 req/60s). |
