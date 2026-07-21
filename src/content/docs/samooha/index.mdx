@@ -1,16 +1,18 @@
 ---
 title: Samooha
-description: Samooha master-data feed specifics for the Geoplan RFID middleware.
+description: Driving RFID warehouse scans from Samooha through the Geoplan middleware.
 ---
 
-Samooha is the warehouse (WMS) source. Geoplan syncs its product master so warehouse records and RFID reads resolve to the same SKU.
+Samooha scans warehouse processes — goods receipt, stock transfer, cycle count, returns. Each is one scan session: open it under the matching activity, the dock/handheld/gate reader streams EPCs, complete it and post the movement from the returned EPCs.
 
-Geoplan's middleware sync API and auth: see **[Master Data Sync](/master-data-sync/)** and **[Authentication](/authentication/)**. Samooha-specific values below.
+Core flow and endpoints: **[EPC Scan Processing](/epc-scan-processing/)**. Auth: **[Authentication](/authentication/)**. Samooha specifics below.
 
 ## Samooha specifics
 
 | | |
 | --- | --- |
-| Source | Samooha product master — access/endpoint to confirm. |
-| Field mapping | Samooha source fields → middleware `sku`, `gtin`, `productName` — to confirm. |
-| Contact | Samooha integration lead. |
+| Activities | Create one per process via [Scan Activities](/scan-activities/), e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`. Reuse the `id`s. |
+| Reader | `deviceId` = the dock / handheld / gate reader's `id` — list via [GET /rfid-readers](/rfid-readers/). |
+| `transactionReference` | Delivery / document number. |
+| Per scan | `POST /epc-scan-processing/sessions` (activity + reader) → poll → `POST …/complete` → post the movement from the returned `epcs`. |
+| Abandon | `POST …/cancel`. |

@@ -1,0 +1,229 @@
+Sr. No. Project Name/Phase                                                   Question                                            Date Raised Author Originating Group  Status                                                  Feedback                                                                         Date Closed  Owner
+  068 Initiating-Design Validation
+                                    What level of integration between GeoPlan system and Samooha ERP                             1-June-2026 Chris W Samooha           Completed       Geoplan:
+                                    system?
+                                    In reference to "The middleware must seamlessly post inventory movements                                                                           The integration points we recommend are for the ff:
+                                    into SAP using bulk and aggregated transactions", will GeoPlan send /                                                                              1. RFID Tag Printing
+                                    receive the stock data without the RFID number? i.e. SKU number, Barcode,                                                                          2. warehouse/zone inventory
+                                    UOM, QTY, Batch Number, Expiry Date                                                                                                                3. Order validation/dispatch
+                                                                                                                                                                                       Please confirm If Samooha can have additional field for EPC ID? we recommend to house the EPC data in
+                                                                                                                                                                                       Samooha since other applications integrates with Samooha directly
+
+                                                                                                                                                                                       SSI: Unique RFID Tag should come from samooha (SKU). This is managed through the RFID System
+
+                                                                                                                                                                                       For Warehouse: GeoPlan clarified that specific warehouse processes, such as picking and put away, will
+                                                                                                                                                                                       not use RFID but will instead be managed using a barcode reader via the current mobile application.
+
+                                                                                                                                                                                       SSI and GeoPlan - the EPC ID must be paired with a correlated unique ID from Samooha, like the Item code
+                                                                                                                                                                                       or SKU.
+
+                                                                                                                                                                                       EPC will be housed on the Geoplan side
+
+069 Initiating-Design Validation What are the expected outbound transactions touch points between GeoPlan                        1-June-2026 Chris W Samooha           In-Progress On  Jun-09 Samooha confirmed CLOSED
+                                                RFID system and Samooha ERP system?                                                                                    Track
+                                                For example: Vendor Returns? Goods Delivery?                                                                                           Vendor Returns (return from RMK to principal): please confirm if the vendor returns still have RFID tags
+                                                What information is required for the outbound?                                                                                         when returned to warehouse
+                                                How is the workflow for these outbound transactions? How to qualify a
+                                                transaction for the RFID scanning?                                                                                                     SSI: establish a process to be able to update the RFID system
+
+                                                                                                                                                                                       Goods Delivery: RFID can be used to batch validate (confirming the items of the order are complete or not)
+                                                                                                                                                                                       the order before dispatching
+
+                                                                                                                                                                                       SSI: RFID should only be able to return what was received in the goods, delivery and crediting. Scanning
+                                                                                                                                                                                       information from samooha.
+
+                                                                                                                                                                                       Workflow for outbound transactions:
+                                                                                                                                                                                       - warehouse receives the order from store or another warehouse
+                                                                                                                                                                                       - warehouse facilitate the picking based on order details. This is barcode process
+                                                                                                                                                                                       - warehouse consolidates the items and validate the order before dispatch
+
+                                                                                                                                                                                       Action Item: this will be part of Discovery Workshop and FSD review
+
+ 070 Initiating-Design Validation What are the expected inbound transactions touch points between GeoPlan                        1-June-2026 Chris W Samooha           Completed       Jun-09 - Samooha confirmed this is closed for now for SOW.
+                                                  RFID system and Samooha ERP system?                                            1-June-2026 Chris W Samooha
+                                                  For example: Purchase Invoice -> ASN or Goods Receipt, Credit Note ->                                                In-Progress On  Inbound transaction touchpoints:
+                                                  Customer Returns                                                                                                     Track           - Goods receipt from factory order
+                                                  What information is required for the inbound?                                                                                        - Goods receipt from vendor returns
+                                                  How is the workflow for these inbound transactions? How to qualify a                                                                 - RFID label printing
+                                                  transaction for the RFID scanning?
+                                                                                                                                                                                       SSI: RFID label printing is now out of scope since RFID tags will be included when items are delivered.
+070.1 Initiating-Design Validation Additional ask on no. 070
+                                                                                                                                                                                       Jun-09 - Samooha can refer to below queries with confirmations. Confirmed CLOSED
+
+                                                                                                                                                                                       RMK - Merch has tags when items arrive. no retagging at WH. RFID enabled already
+                                                                                                                                                                                       RFID - can help with goods receipt to validate the qty of the delivery based on PO
+                                                                                                                                                                                       GeoPlan - requires Samooha to send the PO reference to RFID Middleware including EPC details
+                                                                                                                                                                                       RMK - brands prepare the purchase invoice in Samooha as soon as the invoice from the principal comes in
+                                                                                                                                                                                       GeoPlan - The main purpose of the RFID system for inbound is just to scan the goods; the other related
+                                                                                                                                                                                       validation process will be done on the Samooha side
+                                                                                                                                                                                       SSI - RFID should send back to samooha the Vendor Item Code or the samooha item code from the PO
+
+                                                                                                                                                                                       Goods Receipt (Inbound) -
+                                                                                                                                                                                       Samooha must first send the PO ID to the RFID system (Geoplan) so that Geoplan can reference it during
+                                                                                                                                                                                       scanning.
+                                                                                                                                                                                       Geoplan will return the PO ID along with the EPC ID or UPC details to Samooha.
+
+                                                                                                                                                                                       Samooha - confirmed that when goods arrive at the warehouse, the reference numbers used will be the ASN
+                                                                                                                                                                                       (Advance Shipment Notice) along with the PO (Purchase Order) number
+
+                                                                                                                                                                                       Action Item:
+                                                                                                                                                                                       Samooha : provide vendor product code mapping to Geoplan (Goods Receipt, Goods Delivery)
+                                                                                                                                                                                       - SSI - Samooha to provide customer info to GeoPlan. Confirmed that Samooha should send vendor product
+                                                                                                                                                                                       code and SKU
+                                                                                                                                                                                       - Note: Need to check who will be sending the data to Principal (if internal or GeoPlan)
+
+070.2 Initiating-Design Validation additional ask on customer returns: When do we trigger Geoplan scanning? Is                   Samooha                               In-Progress On  - Jun-09 - GeoPlan - confirmed this can be tackled during Discovery Workshop and FSD
+                                                  it upon receipt of the customer return in the warehouse, followed by scanning                                        Track
+                                                  and then sending the data to Samooha?                                                                                                SSI - Need to establish a process on RFID Middleware to handle this. No control if RFID is still active or not
+                                                                                                                                                                                       for customer return scenario.
+
+                                                                                                                                                                                       Samooha - customer return using credit note scenario. SSI confirmed that this is can be handled through
+                                                                                                                                                                                       under delivery and over delivered process. SSI confirmed that as-is process may still apply.
+
+                                                                                                                                                                                       GeoPlan - as long as RFID tag is intact, RFID reader can read it.
+
+                                                                                                                                                                                       GeoPlan - confirmed that even RFID tag is deactivated, RFID can still read it
+
+                                                                                                                                                                                       GeoPlan - after selling the item, it will be settled by value, so it will not trigger an alarm at security gates at the
+                                                                                                                                                                                       store.
+
+071 Initiating-Design Validation Does the RFID reader for the RMK warehouses include bins locations (i.e.                        1-June-2026 Chris W Samooha           Completed       Action Item: This will be a part of the Discovery Workshop and FSD Review
+                                                A01-A01, A01-A02, etc) or only the high level warehouse / store codes                                                                  Geoplan: Please confirm if Samooha support bin level location. Otherwise, we can do it in Geoplan side
+                                                tracking (i.e. 10000-01, 10000-02, etc)?
+                                                                                                                                                                                       Samooha is doing this at bin - level only.
+                                                                                                                                                                                       SSI - no need for Bin Level. Not part of reporting to Principal.
+Sr. No. Project Name/Phase                                    Question                                                     Date Raised Author Originating Group  Status                                                                       Feedback                                                                              Date Closed  Owner
+                                                                                                                                                                                 SSI - Samooha no need. Need facility in RFID Middleware to be able to produce data which are needed for
+072 Initiating-Design Validation Any new or customized reports with RFID data needed for Samooha?                          1-June-2026 Chris W Samooha           Completed       Principal Data Integration reports.
+
+073 Initiating-Design Validation Can we request to visit the warehouse and observe the current environment                 4-June-2026 Vic  Geoplan              Completed       GeoPlan - Physical Inventory Count - need RFID to speed up process for inventory. SSI - if doable and can
+                                                process? are there any available process flow for the warehouse                                                                  apply.
+                                                transactions?                                                                                                                    Geoplan: Related to 072, we may need to do a site visit to the warehouse to check the environmental factors
+                                                                                                                                                                                 in relation to the warehouse inventory using RFID.
+
+                                                                                                                                                                                 Action Item:
+                                                                                                                                                                                 Please confirm on available date and location? - vic.valdon@geosense.biz to provide list of resources by Jun-
+                                                                                                                                                                                 10 EOD operations@geosense.biz
+
+                                                                                                                                                                                 - Jireh Gonzales - to check availability on Jun-15
+
+074 Initiating-Design Validation How is the process of inventory done currently and is the RFID applicable for 4-June-2026 Vic              Geoplan              In-Progress On  GeoPlan - since tags are made at factory level, there would be data to be sent out to RFID related to EPC ID.
+                                                the whole or zone inventory in warehouse?                                                                        Track           SSI - will validate if this will be part of ASN. need for clear separation between RMK and SSI integrations due
+                                                                                                                                                                                 to potential Universal Product Code (UPC) sharing but differing EPC IDs.
+                                                                                                                                                                                 GeoPlan - if available, need data structure/definition re the data that will be transmitted
+
+                                                                                                                                                                                 Action Item: Confirmation of the ASN for us to determine the EPC ID relating to the SKU or UPC that we will
+                                                                                                                                                                                 be receiving
+
+                                                                                                                                                                                 June-15 Action Item:
+                                                                                                                                                                                 Principal requested for time for internal review prior to their feedback.
+
+075 Initiating-Design Validation Stock Take Stock adjustment                                                               4-June-2026      Samooha              Completed       RMK - No wh to store transfers. it would be outright account transactions.
+                                                                                                                                                                                 SSI - wh to wh transfer, is a possibility. RMK to to define which wh the items to be kept and managed.
+076 Initiating-Design Validation Stock Take Stock adjustment                                                               4-June-2026      Samooha              Completed
+                                                                                                                                                                                 SSI - wh to wh transfer, is a possibility. RMK to to define which wh the items to be kept and managed. if same
+077 Initiating-Design Validation Internal SKU with Samooha                                                                 4-June-2026 Jireh RMK                 Completed       wh, there will be no movements. Action: Need to validate with Brand and WH Managers
+                                                                                                                           4-June-2026 Chris W Samooha           In-Progress On
+078 Initiating-Design Validation To confirm that most / all of the communication between Samooha ERP                                                             Track           Yes we can already start
+                                                system and GeoPlan RFID is one way,
+                                                that is Samooha to send the transaction document data to GeoPlan, no need                                                        Geoplan - The integration between Samooha and Geoplan is two-way. Samooha sends item details
+                                                for return validation from GeoPlan?                                                                                              (document ref #, warehouse code, SKU codes, qty) to Geoplan before the scanning point. After the scanning
+                                                                                                                                                                                 complete, Geoplan returns the matched EPC IDs or UPC details.
+                                    For Example, when there are ON Brand line items in the documents,
+                                    Samooha send to GeoPlan:                                                                                                                     Jun-09:
+                                    a. (inbound) Good Receipt doc data at the point of document creation: PO Ref                                                                 - GeoPlan - can support one-way transaction as stated by Samooha (Note: for other cliens, handshake at
+                                    #, Vendor Name, Warehouse Code, SKU Codes, VPM Codes, and Qty                                                                                document level only)
+                                    b. (inbound) Customer Returns doc data at the point of document creation:                                                                    -- GeoPlan to return code/log to Samooha (data return) if successful or failed transmission
+                                    CN Ref #, Customer Name, Warehouse Code, SKU Codes, VPM Codes, and                                                                           - SSI - there should be a confirmation from RFID back to Samooha (e.g. transaction log)
+                                    Qty                                                                                                                                          - Samooha - can provide log that data has been sent out to RFID (e.g. log of no. of docs sent and received to
+                                    c. (outbound) Goods Delivery doc data at the point of document creation: PO                                                                  and from RFID-GeoPlan)
+                                    Ref #, Customer Name, Warehouse Code, SKU Codes, VPM Codes, and Qty
+                                    d. (outbound) Vendor Returns doc data at the point of document creation: DN                                                                   - Example: Samooha - batch is handled in ASN level and transformed to Goods Receipt (will be handled in
+                                    Ref #, Vendor Name, Warehouse Code, SKU Codes, VPM Codes, and Qty                                                                            line level of the document)
+                                                                                                                                                                                 - GeoPlan - need to send return data after scanning and send to Samooha (qty scanned per each SKU)
+
+                                                                                                                                                                                 SSI confirmation for the following:
+                                                                                                                                                                                 -ON Brand line items in the documents, Samooha send to GeoPlan:
+
+                                                                                                                                                                                 Stock Take Process: --- will be reviewed after Jun-15 Site Visit
+                                                                                                                                                                                 Action Items:
+                                                                                                                                                                                 SSI - need to determine if will be at BIN level*. Need to ensure to use RFID system for Stock Take
+                                                                                                                                                                                 - WH would need both, mobile reader via barcode scanning
+                                                                                                                                                                                 - WH RFID can facilitate. - Please see email.
+                                                                                                                                                                                 - WH Ops is at Stock Take Level for RFID per confirmation from WH visit by GeoPlan but internally it will be
+                                                                                                                                                                                 Bin Level for the mobile barcode scanner. MSD to validate on this and WH Ops and confirm back.
+                                                                                                                                                                                 - Validation from Ms. Tere for WH operations
+
+                                                                                                                                                                                 Inventory Adjustments:--- will be reviewed after Jun-15 Site Visit
+                                                                                                                                                                                 SSI - GeoPlan should be updated and RFID system to be used (at EPC level)
+                                                                                                                                                                                 - where to house the EPC - will be housed on the geoplan side.
+                                                                                                                                                                                 - Master Data (Stock and EPC) push at the start for Samooha to RFID and need to sync Delta going forward
+                                                                                                                                                                                 - Samooha will push the Articles and EPC or unique that samooha is using to Geoplan via the
+                                                                                                                                                                                 interface. It should be synced to Geoplan. EPC will be printed outright on the WH level.
+                                                                                                                                                                                 - Inventory (Master) will not be push to RFID as per GeoPlan
+                                                                                                                                                                                 - Geoplan doesn't need the stock level.
+                                                                                                                                                                                 - For Stock Level: Variance - business logic will be done on Samooha side as per GeoPlan
+                                                                                                                                                                                 - Submission of vendor product mapping from Samooha to Geoplan.
+                                                                                                                                                                                 - SSI schedule would be done nightly. RMK schedule would also be done nightly for scheeduler.
+
+078.1 Initiating-Design Validation No return data or validation need to be send back from GeoPlan to Samooha 4-June-2026 Chris W Samooha                         In-Progress On  Stock Transfers from WH - 1 WH only
+                                                  ERP system, is this correct?                                                                                   Track           Stock Transfer from WH to Store - Out of Scope
+
+078.2 Initiating-Design Validation  Does RMK need status for indicating documents that have been sent to                   4-June-2026 Chris W Samooha           Completed       Customer Returns:
+                                    GeoPlan in the Samooha ERP system?                                                                                                           G- Sehoopulaldnh-aYveese, xdcohcaunmgeenot fsdtaattuas flag is recommended so warehouse staff know whether the RFID scanning
+                                                                                                                                                                                 step has been done or not.
+                                    Does Samooha need to filter out other brands' SKUs from the data to be sent                                                                  Goods Delivery and Vendor Return
+                                    to GeoPlan, when the documents contain mixed brands SKUs?                                                                                    J- uSnca-0n9niAncgtoionnDItisepmat-chwiollnblye(nreovt ioenwpeidckainftgeranJdunp-a1c5kiSnigte) Visit
+                                    Or will GeoPlan ignore the data for other brands aside of ON Brand for RMK?                                                                  -- SVaalmidoaotihoan -frtohmis Mprso.cTeesrsewfoilrl WnoHt imoppearcattiSonasmooha end. No need to send outbound data. No exchange of data
+                                                                                                                                                                                 Ggoeiongplbaanc-kStoamSaomohoaohmau.sTtrfailntesraacntiodntrlaongswmiiltl boenlyreRcoFrIdDe-denGaebolePdlabnr)and SKUs before sending to GeoPlan.
+
+                                                                                                                                                                                 If Samooha includes non-RFID brands, those items will have no scan result returned.
+
+                                                                                                                                                                                 Jun-09
+                                                                                                                                                                                 - SSI - confirmed that filtering will be done on Samooha side
+Sr. No. Project Name/Phase                                      Question                             Date Raised  Author Originating Group        Status                                          Feedback                                                               Date Closed  Owner
+  079 Initiating-Design Validation Question for the Principal:                                       5-June-2026
+                                                                                                                  Tere  RMK                 In-Progress On  For Jun-15 discussion with Principal
+                                                                                                                                            Track
+
+(1) Will there be any chance or instance when an item will not have RFID                                                                                    June-15 Action Item:
+upon delivery? Like a possible glitch or error from the factory or the source?                                                                              Principal requested for time for internal review prior to their feedback.
+If yes, is there a way to manually place RFID to the item so it can have one or
+for it to be processed via RFID?                                                                                                                            June 18:
+                                                                                                                                                            1. Handling Missing Tags: Our factories maintain high accuracy standards, as all products must have a
+(2) Will there be an instance where the RFID tag will have a different data                                                                                 readable RFID tag during outbound. Multiple checks are conducted during manufacturing to ensure readability
+from the actual product? If yes, how can we correct this?                                                                                                   and data accuracy. We expect a negligible volume of unreadable tags (approximately 99.9% readability), so a
+                                                                                                                                                            retagging process for distributors is not required.
+Is there a way for RFID tags to be reactivated, for example during customer                          15-June-2026 Tere  RMK                 In-Progress On  2. Data Discrepancies: The factory ships products based on the RFID tag data, so we do not anticipate
+returns?                                                                                                                                    Track           mismatches when you carry out the outbound process.
+
+                                                                                                                                                            For Jun-15 discussion with Principal
+
+                                                                                                                                                            June-15 Action Item:
+                                                                                                                                                            Principal requested for time for internal review prior to their feedback.
+
+080 Initiating-Design Validation Since the mini-PC was removed in the system architecture, the data  16-June-2026 Vic   Geoplan             Open            June 18: Tag Reactivation: If an RFID tag is broken during the returns process, it cannot be reactivated.
+                                                                                                                                                            For Discussion with Infra team
+
+massaging and deduplication will be done on the cloud side. The network
+
+load will be much higher due to the raw data reads of the local readers. I think
+
+case, more bandwidth is needed and added processing on the server side. In
+
+this regard, we still recommend to localize the following features on the local
+
+network side by installing the RFID agent on the existing PC on the store and
+
+warehouse side.
+
+1. communication on RFID readers (scan ON/OFF, power range, etc)
+
+2. data massaging and deduplication
+
+Note: no data will be stored on the local machine, just control signal and data
+processing.
+
+Please reconfirm if SSI can reconsider this? The agent will only require bare
+minimum equivalent to Core i3 and 4GB RAM.
+

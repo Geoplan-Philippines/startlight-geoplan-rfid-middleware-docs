@@ -1,0 +1,268 @@
+Business Requirements Document
+
+RFID Implementation
+
+v0.01
+Prepared By: Glen
+Date: January 8, 2026
+Version Control
+
+Version        Date             Updated By                       Comments
+                              Glen Gregorio
+0.01     01/08/26             Glen Gregorio  Initial draft
+
+0.02     01/19/26             Glen Gregorio  Added notes considering learnings from
+                                             Zara store visit.
+0.03     01/30/26
+                                             Additional note with consideration to
+                                             WHSE
+
+Approval List
+
+Version          Approver                        Role            Approval
+                                                                   Date
+                                   Chief Information Officer
+0.01     Cesar Catalan Jr.    Head of IT Projects and Delivery
+                               Head of IT Systems Operations
+0.01     Tristan De Jesus     Head of IT Enterprise Application
+
+0.01     Gabriel Bustamante        Head of IT Infrastructure
+
+0.01           Chris Visaya
+
+0.01           Ralph Mallari
+Executive Summary
+
+Provide a high-level overview of the project, including the business opportunity, objectives, and expected benefits.
+
+The company intends to implement Radio Frequency Identification (RFID) technology across its
+retail ecosystem to improve inventory accuracy, operational efficiency, and visibility across
+warehouses and stores. This initiative will integrate RFID hardware and middleware with the
+existing SAP ERP landscape, enabling automated, near­real-time inventory tracking and
+event-driven business processes.
+
+The implementation will cover inbound, outbound, internal movement, sales, and return
+scenarios across warehouses, stores, and selected office locations. RFID events will be logically
+aggregated and translated into meaningful business events before being posted to SAP,
+ensuring scalability, performance, and data accuracy.
+
+Expected benefits include:
+
+     Improved inventory accuracy and visibility across warehouses and stores
+     Reduced labor effort and cycle count time
+     Faster inventory reconciliation and exception detection
+     Enhanced customer experience via accurate product availability
+     Stronger readiness/support for omnichannel fulfillment
+
+Business Objective
+
+List the business goals this project aims to fulfill.
+
+    1. Achieve inventory accuracy across warehouses and stores.
+    2. Reduce manual scanning and counting effort in stores and warehouses
+    3. Enable near­real-time visibility of inventory movement
+    4. Improve store shelf availability and replenishment responsiveness
+    5. Support faster and more reliable store receiving and sales return processing
+    6. Provide a scalable RFID foundation that supports future rollout to additional stores and
+
+         warehouses
+
+Background and Current State
+
+Describe the current business process and the problem or opportunity prompting the project.
+
+Current State
+
+Currently, inventory movements are tracked primarily through barcode scanning and manual
+processes within SAP. Store cycle counts and stock validation are labor-intensive,
+time-consuming, and prone to human error. Inventory discrepancies are often discovered late,
+impacting replenishment, availability, and customer satisfaction.
+Inbound and outbound processes rely heavily on manual confirmation steps. Store operations,
+including receiving, shelf replenishment, and returns, lack automated validation mechanisms.
+Visibility into shelf-level availability versus backroom stock is limited.
+
+Opportunity
+
+RFID technology provides an opportunity to automate inventory capture, reduce manual
+intervention, and enable continuous inventory awareness. Observations from mature RFID retail
+implementations (e.g., fashion retailers) indicate significant improvements in cycle count speed,
+store accuracy, and operational efficiency when RFID is embedded into daily store workflows.
+
+Scope of Work
+
+Identify what is within and out of scope of the solution coverage.
+
+In Scope
+
+     RFID Events Management
+               Capture RFID tag reads from fixed and handheld readers
+               Aggregate raw RFID reads into logical business events using defined time
+                   windows and filtering rules
+               Support logical grouping of readers into business zones (e.g., warehouse
+                   inbound dock, warehouse outbound dock, store backroom, sales floor, POS)
+               Generate standardized RFID business events (e.g., Goods Receipt, Goods
+                   Issue, Stock Transfer, Sale, Return)
+
+     Logical Zoning & Reader Grouping
+               Support logical grouping of RFID readers into business zones such as:
+                         Warehouse inbound docks
+                         Warehouse outbound docks
+                         Staging / buffer zones
+                         Store backroom receiving
+                         Sales floor, POS checkout, and exit zones
+                         Apply business rules at the zone level, not per individual reader
+                         Prevent cross-zone misreads (e.g., inbound reads interpreted as
+                             outbound)
+
+     Warehouse Operations:
+               Inbound: Supplier deliveries (local & foreign), warehouse transfers, returns to
+                   vendor, returns from sales
+               Outbound: Shipments to stores, sales fulfillment, transfers to head office
+
+     Store Operations:
+               Store receiving via backroom RFID zones
+               Separation of backroom inventory and sales-floor availability
+               RFID-enabled cycle counting (full and partial)
+               Shelf replenishment support based on inventory visibility
+               Sales and checkout inventory decrement (RFID-assisted or validated)
+               Customer sales returns processing
+     RFID hardware deployment (tags, fixed/mobile readers)
+     SAP Integration
+               Integration of aggregated RFID business events into SAP (e.g., MM, SD, EWM,
+
+                   SAP Retail)
+               Posting of inventory movements using bulk and aggregated transactions
+               Support for error handling, retries, and reconciliation
+               Auditability of RFID-triggered postings
+     Redesign affected processes:
+               Tagging of RFID Tags
+               Receiving and put-away
+               Picking, packing, shipping
+               Stock replenishment, cycle counting, returns
+     Reporting and Monitoring
+               Operational dashboards for RFID events and exceptions
+               Visibility into inventory accuracy, cycle count performance, and exception rates.
+     Exception Handling & Governance
+               Classification of RFID exceptions (missing reads, extra reads, unexpected exits,
+
+                   duplicate detections)
+               Role-based manual override capabilities
+               Full audit trail for overrides and adjustments
+               Clear ownership of exception resolution (store vs warehouse vs HQ)
+     User training and change management
+
+Out of Scope
+
+     Core SAP ERP redesign
+     Non-inventory use cases (marketing/customer tracking)
+     RFID for non-retail business units or external partners
+     Full replacement of barcodes where still required
+     Advanced analytics beyond basic inventory updates
+
+Key considerations:
+
+RFID Event  SAP Action Matrix (Warehouse & Store)
+Warehouse RFID Events  SAP Actions
+
+RFID          Trigger    Business        SAP           SAP Object Posting           Exception
+Business      Zone       Meaning         Action                            Rule     Handling
+Event
+              Warehouse  Goods           Post Goods    Inbound        Aggregated    Shortage,
+Inbound       Inbound    physically      Receipt       Delivery / PO  per shipment  overage
+Receipt       Dock       arrived at      (GR)                         / ASN         flagged for
+Detected                 warehouse                                                  review
+
+Unexpected    Warehouse  Item not        No            --             Logged as     Manual
+Inbound Item  Inbound    expected in                                  exception     investigation
+              Dock       shipment        auto-posting                               required
+
+Putaway       Dock       Item moved      No SAP        --             Informational None
+Transition    Storage    into storage                                 only
+              Zone                       posting
+
+Inventory     Storage    RFID-assisted Inventory       Inventory      No auto-post Approval
+Count         Zone                                     Doc                                  required
+Completed                cycle count     Difference
+                                                       --             Informational Missing items
+                                         Proposal                                           flagged
+
+Outbound      Staging /  Shipment        No SAP
+Ready         Outbound   prepared        posting
+Detected      Zone
+
+Outbound      Warehouse  Goods left      Post Goods Outbound          Aggregated    Partial
+Exit          Outbound   warehouse       Issue (PGI) Delivery         per delivery  shipment
+Confirmed     Dock                                                                  exception
+
+Warehouse-to Outbound /  Stock transfer  STO PGI /     Stock          Event-paired Mismatch
+                         between         GR            Transfer                             flagged
+-Warehouse Inbound       warehouses                    Order
+
+Transfer      Dock
+
+Return to     Warehouse  RTV shipment Post Goods Return PO            Aggregated    Validation
+Vendor Exit   Outbound                                                              required
+              Dock       dispatched      Issue (RTV)
+Store RFID Events  SAP Actions
+
+RFID          Trigger      Business      SAP Action SAP Object Posting                 Exception
+Business      Zone         Meaning                                               Rule  Handling
+Event
+
+Store         Store        Goods         Post Goods       STO /        Aggregated      Missing /
+Receiving     Backroom     arrived at    Receipt          Delivery     per delivery    extra flagged
+Detected                   store
+
+Unexpected Store           Item not on   No               --           Logged          Investigation
+Store Receipt Backroom     delivery                                                    required
+                                         auto-posting
+
+Backroom to Sales Floor Item             No SAP           --           Visibility only None
+
+Sales Floor Entry          available for posting
+
+                           sale
+
+Store Cycle   Store Zones  RFID          Inventory        Inventory    No auto-post Store
+Count                      inventory     Adjustment       Doc                                approval
+Completed                  count         Proposal
+
+POS Sale      POS / Exit   Item sold     Reduce           Billing Doc  POS-driven      RFID Tag
+Confirmed     Zone                       Inventory                                     failure
+                                                                                       fallback
+
+Unexpected Store Exit      Item exited   No               --           Exception       Loss
+Exit Detected              without sale                                only            prevention
+                                         auto-posting                                  review
+
+Customer      Store        Item returned Post Goods       Return Doc   Validated       Quarantine if
+Return        Backroom /                         Receipt                               mismatch
+Detected      POS
+
+Store-to-War  Store        Stock         PGI for          STO          Aggregated      Damage
+ehouse        Outbound     returned to   Return STO                                    check
+Return        Zone         WH
+
+RFID Reader type needs:
+     Handheld scanners: for cycle counts, stock checks, picking stocks and possibly
+         exception handling
+     Fixed scanner: docks, conveyors, packing stations, gates or checkout gates
+
+RFID Tag informations:
+     Unique item identifier (EPC - Electronic product code mapped to SAP article code or
+         GTIN)
+Assumptions and Constrains:
+
+     RFID tags will carry a unique identifier linked to master data in SAP
+     Product master, pricing, and business rules will remain in SAP
+     WHSE | Store layouts and physical constraints may impact reader placement
+     Staff training and change management are critical success factors
+
+Reference Document                                                 Document Type /
+                                                                         Version
+The following documents were used as references of this document.
+                                                                     Google Sheet
+                                   Document Title
+
+     RFID_Demo_Checklist_and_BRD_Enhancement
+

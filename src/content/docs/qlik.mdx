@@ -1,0 +1,27 @@
+---
+title: Qlik
+description: Qlik BI analytics over the middleware database — no RFID API.
+---
+
+Qlik BI does **not** use the RFID API. It is granted **read-only database access** to the middleware and builds its own analytics and dashboards on top.
+
+| | |
+| --- | --- |
+| Integration | Direct **read-only** DB connection. |
+| Owns | Its own data models, queries, dashboards over the middleware schema. |
+| Access | DB host / credentials provisioned by Geoplan — TBD. |
+
+## Tables of interest
+
+Read-only analytics typically draw from:
+
+| table | holds |
+| --- | --- |
+| `scan_activities` | business processes scanned under |
+| `epc_scan_sessions` | one row per scan (status, activity, reader, timestamps) |
+| `epc_scan_reads` | EPCs captured per session (with `read_count`) |
+| `rfid_readers` | registered reader inventory |
+| `master_data_sync` | product master (`sku`, `gtin`, `productName`, `epc`/`tid`) |
+| `exceptions` | logged exception events |
+
+Schema/column details on request from SSI.

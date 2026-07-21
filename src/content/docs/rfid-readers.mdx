@@ -1,0 +1,70 @@
+---
+title: RFID Readers
+description: List the reader devices to pick a session's deviceId.
+---
+
+An RFID reader is a physical device a [scan session](/epc-scan-processing/) runs on. SSI registers and maintains readers in the Geoplan Middleware dashboard — you only **read** the list here to display the available devices and let staff pick one before scanning. Reference the chosen reader by its `id` as the session's `deviceId`. All endpoints require [`x-api-key`](/authentication/).
+
+## Base URL
+
+```
+https://rfid-middleware.geoplanph.com/api/v1
+```
+
+Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+
+## Fields
+
+| field | type | notes |
+| --- | --- | --- |
+| `id` | uuid | reference as a session's `deviceId` |
+| `name` | string | display label |
+| `serialNumber` | string | hardware serial |
+| `model` | string \| null | |
+| `ipAddress` | string \| null | |
+| `status` | enum | `ACTIVE` \| `INACTIVE` \| `MAINTENANCE`. Only `ACTIVE` readers can start sessions |
+| `notes` | string \| null | |
+| `createdAt` / `updatedAt` | ISO-8601 | |
+
+## GET /rfid-readers
+
+List readers, ordered by `createdAt` desc. Use this to populate a device picker before scanning. Filter to `status=ACTIVE` for selectable devices.
+
+| param | type | notes |
+| --- | --- | --- |
+| `status` | enum | `ACTIVE` \| `INACTIVE` \| `MAINTENANCE` |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    {
+      "id": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88",
+      "name": "Lane 3 flatbed",
+      "serialNumber": "IDATA-A500-0031",
+      "model": "iData A500",
+      "ipAddress": "10.20.3.31",
+      "status": "ACTIVE",
+      "notes": null,
+      "createdAt": "2026-07-01T02:00:00.000Z",
+      "updatedAt": "2026-07-01T02:00:00.000Z"
+    }
+  ]
+}
+```
+
+Take `id` from the reader you want and pass it as `deviceId` when you [start a session](/epc-scan-processing/#post-epc-scan-processingsessions).
+
+## GET /rfid-readers/:id
+
+Single reader by `id`. `404` if unknown.
+
+## Errors
+
+| status | when |
+| --- | --- |
+| 400 | Invalid `status` param. |
+| 401 | Missing or invalid `x-api-key`. |
+| 404 | Reader not found. |
+| 429 | Rate limit exceeded (100 req/60s). |

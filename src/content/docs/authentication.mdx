@@ -3,32 +3,35 @@ title: Authentication
 description: API key authentication for the Geoplan RFID middleware integration.
 ---
 
-API key is the authentication scheme across the integration. Every authenticated request carries an `x-api-key` header.
+import { Aside } from '@astrojs/starlight/components';
 
-## Keys
-
-| | |
-| --- | --- |
-| Issued by | Geoplan. Request a key from your Geoplan contact. |
-| Expiry | Never expires. |
-| Use | Send on every authenticated request. |
-| Handling | Treat as a secret — don't commit it or embed it in client code. |
-
-## Request
-
-Base URL `https://rfid-middleware.geoplanph.com/api/v1` (host not yet provisioned — confirm with Geoplan).
+Every request carries an `x-api-key` header. No key, or an unknown key → `401`, request not processed. Applies to **every** endpoint in this reference.
 
 ```http
-GET /api/v1/master-data-sync HTTP/1.1
+GET /api/v1/scan-activities HTTP/1.1
 Host: rfid-middleware.geoplanph.com
-x-api-key: <key issued by Geoplan>
+x-api-key: rfid_AbC…WRGkU
 ```
 
 ```bash
-curl "https://rfid-middleware.geoplanph.com/api/v1/master-data-sync" \
-  -H "x-api-key: <key>"
+curl "https://rfid-middleware.geoplanph.com/api/v1/scan-activities" \
+  -H "x-api-key: rfid_AbC…WRGkU"
 ```
 
-## Missing or invalid key
+## Keys
 
-Returns `401 Unauthorized`. The request is not processed.
+Manage your own keys in the Geoplan Middleware dashboard → **API Keys** — create and revoke them yourself.
+
+![Geoplan Middleware dashboard — API Keys page: create, list, and revoke keys](../../assets/api-keys-dashboard.png)
+
+| | |
+| --- | --- |
+| Create | **Create a key** → name it → the secret is shown **once**. Copy it before leaving the page — it can't be retrieved later. |
+| Format | `rfid_` prefix + random token, e.g. `rfid_AbC…WRGkU`. Stored hashed; the dashboard only ever lists metadata, never the secret. |
+| Use | Send as `x-api-key` on every request. |
+| Rotate | Create a new key, switch your client to it, then **Revoke** the old one. |
+| Revoke | **Revoke** in the list — takes effect immediately. |
+| Expiry | Never expires; valid until revoked. |
+| Handling | Treat as a secret — don't commit it or embed it in client code. |
+
+<Aside type="caution">Base URL `https://rfid-middleware.geoplanph.com/api/v1` and the dashboard URL are not yet provisioned. Confirm both with Geoplan.</Aside>

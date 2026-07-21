@@ -1,0 +1,109 @@
+---
+title: Scan Activities
+description: CRUD for the business processes RFID scan sessions run under.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A **scan activity** is the business process a scan runs under — Goods Receipt, POS Sale, Stock Transfer, Customer Returns, cycle count, etc. Every [scan session](/epc-scan-processing/) references exactly one **active** activity, so reads are grouped and audited by process.
+
+Create the activities you need once, reuse their `id` on every session. ETP and Samooha each manage their own via these endpoints. All require [`x-api-key`](/authentication/).
+
+## Base URL
+
+```
+https://rfid-middleware.geoplanph.com/api/v1
+```
+
+Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+
+## Fields
+
+| field | type | notes |
+| --- | --- | --- |
+| `id` | uuid | server-generated. Use on sessions. |
+| `code` | string | unique machine key. Upper-cased; spaces → `_`. Pattern `^[A-Z][A-Z0-9_]*$`. ≤ 60. e.g. `GOODS_RECEIPT` |
+| `name` | string | display label. ≤ 120. e.g. `Goods Receipt` |
+| `description` | string \| null | optional. ≤ 500 |
+| `isActive` | bool | default `true`. `false` = archived, not selectable for new sessions |
+| `createdAt` / `updatedAt` | ISO-8601 | server-managed |
+
+## POST /scan-activities
+
+Create an activity. Returns `201`.
+
+| field | required | notes |
+| --- | --- | --- |
+| `code` | yes | normalized before save (`Goods Receipt` → `GOODS_RECEIPT`) |
+| `name` | yes | |
+| `description` | no | |
+| `isActive` | no | defaults `true` |
+
+```json
+// request
+{ "code": "GOODS_RECEIPT", "name": "Goods Receipt", "description": "Inbound receiving at the warehouse dock" }
+```
+
+```json
+// 201
+{
+  "statusCode": 201,
+  "message": "Success",
+  "data": {
+    "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10",
+    "code": "GOODS_RECEIPT",
+    "name": "Goods Receipt",
+    "description": "Inbound receiving at the warehouse dock",
+    "isActive": true,
+    "createdAt": "2026-07-22T02:00:00.000Z",
+    "updatedAt": "2026-07-22T02:00:00.000Z"
+  }
+}
+```
+
+Duplicate `code` → `409`.
+
+## GET /scan-activities
+
+List all activities, ordered by `name` asc. Not paginated.
+
+| param | type | notes |
+| --- | --- | --- |
+| `isActive` | bool | omit for all; `true` returns only selectable ones |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "GOODS_RECEIPT", "name": "Goods Receipt", "description": "…", "isActive": true, "createdAt": "…", "updatedAt": "…" }
+  ]
+}
+```
+
+## GET /scan-activities/:id
+
+Single activity by `id`. `404` if unknown.
+
+## PATCH /scan-activities/:id
+
+Partial update — send any of `code`, `name`, `description`, `isActive`. Returns `200` with the updated activity. `404` unknown, `409` duplicate `code`.
+
+```json
+// request
+{ "name": "Goods Receipt (Inbound)", "isActive": false }
+```
+
+## DELETE /scan-activities/:id
+
+**Archive** (soft-delete). Sets `isActive: false`; sessions that reference it are preserved for audit. Returns `200` with the archived activity. An archived activity can no longer start new sessions — starting one returns `400`. To restore, `PATCH { "isActive": true }`.
+
+## Errors
+
+| status | when |
+| --- | --- |
+| 400 | Invalid body/param (e.g. bad `code` pattern). |
+| 401 | Missing or invalid `x-api-key`. |
+| 404 | Activity not found. |
+| 409 | `code` already exists. |
+| 429 | Rate limit exceeded (100 req/60s). |

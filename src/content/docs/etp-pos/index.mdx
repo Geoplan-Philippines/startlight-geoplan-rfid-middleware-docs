@@ -1,16 +1,20 @@
 ---
 title: ETP POS
-description: ETP POS master-data feed specifics for the Geoplan RFID middleware.
+description: Driving RFID checkout scans from ETP POS through the Geoplan middleware.
 ---
 
-ETP POS is the point-of-sale source. Geoplan syncs its product master so barcode and RFID reads resolve to the same SKU.
+ETP POS scans at checkout. A cashier **Start** opens a scan session; the lane reader streams EPCs; **Stop** completes it and returns the EPCs, which POS resolves to SKUs and bills.
 
-Geoplan's middleware sync API and auth: see **[Master Data Sync](/master-data-sync/)** and **[Authentication](/authentication/)**. ETP-specific values below.
+Core flow and endpoints: **[EPC Scan Processing](/epc-scan-processing/)**. Auth: **[Authentication](/authentication/)**. ETP specifics below.
 
 ## ETP POS specifics
 
 | | |
 | --- | --- |
-| Source | ETP POS product master — access/endpoint to confirm. |
-| Field mapping | ETP source fields → middleware `sku`, `gtin`, `productName` — to confirm. |
-| Contact | ETP POS integration lead. |
+| Activity | Create one via [Scan Activities](/scan-activities/), e.g. `POS_SALE`. Reuse its `id` on every session. |
+| Reader | `deviceId` = the lane flatbed reader's `id` — list via [GET /rfid-readers](/rfid-readers/). |
+| `transactionReference` | POS bill / order number. |
+| Start | `POST /epc-scan-processing/sessions` on cashier **Start**. |
+| Progress | Poll `GET /epc-scan-processing/sessions/:id` to show the live count. |
+| Stop | `POST …/complete` → resolve returned `epcs` → SKUs → bill. |
+| Abandon | `POST …/cancel`. |
