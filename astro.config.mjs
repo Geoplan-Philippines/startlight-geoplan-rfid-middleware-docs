@@ -22,12 +22,22 @@ export default defineConfig({
 			favicon: '/favicon.png',
 			lastUpdated: true,
 			credits: false,
+			components: {
+				PageTitle: './src/components/PageTitle.astro',
+			},
 			sidebar: [
 				{
 					label: 'Start here',
 					items: [
 						{ label: 'Overview', link: '/' },
 						{ label: 'Authentication', slug: 'authentication' },
+					],
+				},
+				{
+					label: 'Integrations',
+					items: [
+						{ label: 'ETP POS', slug: 'etp-pos' },
+						{ label: 'Samooha', slug: 'samooha' },
 					],
 				},
 				{
@@ -40,16 +50,10 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Providers',
-					items: [
-						{ label: 'ETP POS', slug: 'etp-pos' },
-						{ label: 'Samooha', slug: 'samooha' },
-					],
-				},
-				{
 					label: 'Other systems',
 					items: [
 						{ label: 'Qlik', slug: 'qlik' },
+						{ label: 'SAP (Proposed)', slug: 'sap' },
 					],
 				},
 			],

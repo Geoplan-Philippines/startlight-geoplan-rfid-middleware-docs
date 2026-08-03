@@ -1,0 +1,56 @@
+---
+import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+
+const { id, entry } = Astro.locals.starlightRoute;
+const title = entry.data.title;
+
+const integratorLogos: Record<string, string> = {
+	'etp-pos': '/integrator/etp.png',
+	samooha: '/integrator/samooha.png',
+	sap: '/integrator/sap.png',
+	qlik: '/integrator/qlik.png',
+};
+
+const logo = integratorLogos[id];
+---
+
+{
+	logo ? (
+		<h1 id="_top" class="integrator-page-title">
+			<span>{title}</span>
+			<img src={logo} alt="" aria-hidden="true" loading="eager" />
+		</h1>
+	) : (
+		<DefaultPageTitle />
+	)
+}
+
+<style>
+	@layer starlight.core {
+		.integrator-page-title {
+			margin-top: 1rem;
+			line-height: 1;
+		}
+
+		.integrator-page-title span {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		.integrator-page-title img {
+			display: block;
+			width: auto;
+			height: auto;
+			max-width: min(100%, 18rem);
+			max-height: 3rem;
+			object-fit: contain;
+		}
+	}
+</style>

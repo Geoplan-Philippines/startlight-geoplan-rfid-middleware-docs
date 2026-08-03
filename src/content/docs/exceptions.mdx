@@ -5,9 +5,9 @@ description: Geoplan middleware endpoints for reading and resolving exceptions.
 
 import { Aside } from '@astrojs/starlight/components';
 
-Exceptions raised by the middleware when something needs manual review — unknown EPC, stock mismatch, failed posting, failed deactivation. All endpoints require [`x-api-key`](/authentication/).
+Exceptions raised by the middleware when something needs manual review: unknown EPC, stock mismatch, failed posting, failed deactivation. All endpoints require [`x-api-key`](/authentication/).
 
-No endpoint creates an exception. The middleware raises them internally; integrators only read and resolve.
+No endpoint creates an exception. The middleware raises them internally. Integrators only read and resolve.
 
 ## Base URL
 
@@ -34,8 +34,8 @@ Paginated, filterable list of exceptions.
 
 | param | type | default | notes |
 | --- | --- | --- | --- |
-| `type` | enum | — | one of the types above |
-| `status` | enum | — | `OPEN` or `RESOLVED` |
+| `type` | enum | - | one of the types above |
+| `status` | enum | - | `OPEN` or `RESOLVED` |
 | `page` | int | 1 | ≥ 1 |
 | `limit` | int | 10 | 1–50 |
 
@@ -56,7 +56,7 @@ Paginated, filterable list of exceptions.
 }
 ```
 
-`context` shape varies by type — carries whatever detail applies (e.g. the unmatched EPC, expected vs. scanned quantity).
+`context` shape varies by type. It carries whatever detail applies (e.g. the unmatched EPC, expected vs. scanned quantity).
 
 ## GET /exceptions/:id
 
@@ -114,5 +114,5 @@ Marks an exception resolved.
 | 400 | Invalid query parameter or body. |
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Exception not found. |
-| 409 | `resolve` only — exception is already `RESOLVED`. |
+| 409 | `resolve` only: exception is already `RESOLVED`. |
 | 429 | Rate limit exceeded (100 req/60s). |

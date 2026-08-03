@@ -3,18 +3,114 @@ title: ETP POS
 description: Driving RFID checkout scans from ETP POS through the Geoplan middleware.
 ---
 
-ETP POS scans at checkout. A cashier **Start** opens a scan session; the lane reader streams EPCs; **Stop** completes it and returns the EPCs, which POS resolves to SKUs and bills.
+import { Steps } from '@astrojs/starlight/components';
 
-Core flow and endpoints: **[EPC Scan Processing](/epc-scan-processing/)**. Auth: **[Authentication](/authentication/)**. ETP specifics below.
+ETP POS scans at checkout. A cashier's **Start** opens a scan session and the lane reader streams EPCs into it. **Stop** completes the session, returns the EPCs, and POS resolves them to SKUs and bills.
 
-## ETP POS specifics
+## Before you start
+
+- API key issued. See [Authentication](/authentication/).
+- Your checkout activity defined in the dashboard, e.g. `POS_SALE`.
+- Lane readers registered in the dashboard.
+
+## Implementation
+
+<Steps>
+
+1. **Authenticate.** Every call below sends `x-api-key`. See [Authentication](/authentication/).
+
+2. **Find your reader's `deviceId`.** List readers and take the `id` of the lane reader at this counter.
+
+   ```json
+   // GET /rfid-readers?status=ACTIVE
+   {
+     "statusCode": 200,
+     "message": "Success",
+     "data": [
+       { "id": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88", "name": "Lane 3 flatbed", "status": "ACTIVE" }
+     ]
+   }
+   ```
+
+   Full field list: [RFID Readers](/rfid-readers/).
+
+3. **Find your activity's `id`.** Your `POS_SALE` activity is already defined in the dashboard. Look it up once at startup and cache the `id`.
+
+   ```json
+   // GET /scan-activities?isActive=true
+   {
+     "statusCode": 200,
+     "message": "Success",
+     "data": [
+       { "id": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "code": "POS_SALE", "name": "POS Sale", "isActive": true }
+     ]
+   }
+   ```
+
+   Full field list: [Scan Activities](/scan-activities/).
+
+4. **Cashier taps Start.** Open a session with the activity and reader from steps 2-3, plus your own bill/order number as `transactionReference`.
+
+   ```json
+   // POST /epc-scan-processing/sessions
+   // request
+   { "scanActivityId": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88", "transactionReference": "TXN-001" }
+   ```
+
+   ```json
+   // 201
+   {
+     "statusCode": 201,
+     "message": "Success",
+     "data": {
+       "id": "38a7393e-7750-4437-9c0f-b69db6e247b5",
+       "status": "OPEN",
+       "uniqueCount": 0,
+       "epcs": []
+     }
+   }
+   ```
+
+   The reader turns on as soon as this returns.
+
+5. **Show the live count.** Poll while the session is `OPEN` to update the counter on screen.
+
+   ```json
+   // GET /epc-scan-processing/sessions/38a7393e-7750-4437-9c0f-b69db6e247b5
+   { "statusCode": 200, "message": "Success", "data": { "status": "OPEN", "uniqueCount": 2, "epcs": ["3034F4A9…01", "3034F4A9…02"] } }
+   ```
+
+6. **Cashier taps Stop.** Complete the session, take the final `epcs`, resolve each to a SKU, and bill.
+
+   ```json
+   // POST /epc-scan-processing/sessions/38a7393e-7750-4437-9c0f-b69db6e247b5/complete
+   { "statusCode": 200, "message": "Success", "data": { "status": "COMPLETED", "uniqueCount": 2, "epcs": ["3034F4A9…01", "3034F4A9…02"] } }
+   ```
+
+7. **Order abandoned instead?** Call `/cancel` on the same session in place of `/complete`. No billing, no EPC resolution.
+
+</Steps>
+
+Full request/response detail, field types, and lifecycle rules: [EPC Scan Processing](/epc-scan-processing/).
+
+## Exceptions you might see
+
+| type | when |
+| --- | --- |
+| `UNKNOWN_EPC` | A scanned EPC has no matching master data. |
+| `POSTING_FAILED` | The sale didn't post downstream. |
+| `DEACTIVATION_FAILED` | Tag deactivation after sale didn't complete. |
+
+Read and resolve these through [Exception Handling](/exceptions/).
+
+## Quick reference
 
 | | |
 | --- | --- |
-| Activity | Create one via [Scan Activities](/scan-activities/), e.g. `POS_SALE`. Reuse its `id` on every session. |
-| Reader | `deviceId` = the lane flatbed reader's `id` — list via [GET /rfid-readers](/rfid-readers/). |
+| Activity | `POS_SALE`, looked up via [Scan Activities](/scan-activities/). |
+| Reader | `deviceId` = the lane flatbed reader's `id`, via [RFID Readers](/rfid-readers/). |
 | `transactionReference` | POS bill / order number. |
 | Start | `POST /epc-scan-processing/sessions` on cashier **Start**. |
 | Progress | Poll `GET /epc-scan-processing/sessions/:id` to show the live count. |
-| Stop | `POST …/complete` → resolve returned `epcs` → SKUs → bill. |
+| Stop | `POST …/complete`, then resolve the returned `epcs` to SKUs and bill. |
 | Abandon | `POST …/cancel`. |

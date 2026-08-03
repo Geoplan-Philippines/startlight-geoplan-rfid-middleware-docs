@@ -3,16 +3,114 @@ title: Samooha
 description: Driving RFID warehouse scans from Samooha through the Geoplan middleware.
 ---
 
-Samooha scans warehouse processes — goods receipt, stock transfer, cycle count, returns. Each is one scan session: open it under the matching activity, the dock/handheld/gate reader streams EPCs, complete it and post the movement from the returned EPCs.
+import { Steps } from '@astrojs/starlight/components';
 
-Core flow and endpoints: **[EPC Scan Processing](/epc-scan-processing/)**. Auth: **[Authentication](/authentication/)**. Samooha specifics below.
+Samooha scans warehouse processes: goods receipt, stock transfer, cycle count, returns. Each process is one scan session. Open it under the matching activity, let the dock, handheld, or gate reader stream EPCs, then complete it and post the movement from the returned EPCs.
 
-## Samooha specifics
+## Before you start
+
+- API key issued. See [Authentication](/authentication/).
+- Your process activities defined in the dashboard, e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`.
+- Dock, handheld, and gate readers registered in the dashboard.
+
+## Implementation
+
+<Steps>
+
+1. **Authenticate.** Every call below sends `x-api-key`. See [Authentication](/authentication/).
+
+2. **Find your reader's `deviceId`.** List readers and take the `id` of the dock, handheld, or gate reader running this process.
+
+   ```json
+   // GET /rfid-readers?status=ACTIVE
+   {
+     "statusCode": 200,
+     "message": "Success",
+     "data": [
+       { "id": "9b4d2a71-6c3f-4e88-a1d5-3f7b9c2e4a60", "name": "Dock 2 fixed reader", "status": "ACTIVE" }
+     ]
+   }
+   ```
+
+   Full field list: [RFID Readers](/rfid-readers/).
+
+3. **Find your activity's `id`.** Your process activities are already defined in the dashboard. Look them up once at startup and cache the `id`s.
+
+   ```json
+   // GET /scan-activities?isActive=true
+   {
+     "statusCode": 200,
+     "message": "Success",
+     "data": [
+       { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "GOODS_RECEIPT", "name": "Goods Receipt", "isActive": true },
+       { "id": "d4f7c2b1-3e9a-4a6d-9c58-7b2e1f4a9d33", "code": "STOCK_TRANSFER", "name": "Stock Transfer", "isActive": true },
+       { "id": "f1a3b5c7-2d4e-4f6a-8b91-3c5d7e9f1a22", "code": "CYCLE_COUNT", "name": "Cycle Count", "isActive": true }
+     ]
+   }
+   ```
+
+   Full field list: [Scan Activities](/scan-activities/).
+
+4. **Open a session.** Pick the activity for the process running, the reader from step 2, and your own delivery/document number as `transactionReference`.
+
+   ```json
+   // POST /epc-scan-processing/sessions
+   // request
+   { "scanActivityId": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "deviceId": "9b4d2a71-6c3f-4e88-a1d5-3f7b9c2e4a60", "transactionReference": "GRN-004521" }
+   ```
+
+   ```json
+   // 201
+   {
+     "statusCode": 201,
+     "message": "Success",
+     "data": {
+       "id": "52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77",
+       "status": "OPEN",
+       "uniqueCount": 0,
+       "epcs": []
+     }
+   }
+   ```
+
+   The reader turns on as soon as this returns.
+
+5. **Show the live count.** Poll while the session is `OPEN` to track progress.
+
+   ```json
+   // GET /epc-scan-processing/sessions/52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77
+   { "statusCode": 200, "message": "Success", "data": { "status": "OPEN", "uniqueCount": 3, "epcs": ["3034F4A9…21", "3034F4A9…22", "3034F4A9…23"] } }
+   ```
+
+6. **Close it out.** Complete the session, take the final `epcs`, and post the movement.
+
+   ```json
+   // POST /epc-scan-processing/sessions/52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77/complete
+   { "statusCode": 200, "message": "Success", "data": { "status": "COMPLETED", "uniqueCount": 3, "epcs": ["3034F4A9…21", "3034F4A9…22", "3034F4A9…23"] } }
+   ```
+
+7. **Process abandoned instead?** Call `/cancel` on the same session in place of `/complete`. No movement gets posted.
+
+</Steps>
+
+Full request/response detail, field types, and lifecycle rules: [EPC Scan Processing](/epc-scan-processing/).
+
+## Exceptions you might see
+
+| type | when |
+| --- | --- |
+| `UNKNOWN_EPC` | A scanned EPC has no matching master data. |
+| `STOCK_MISMATCH` | Scanned quantity doesn't match expected stock. |
+| `POSTING_FAILED` | The movement didn't post downstream. |
+
+Read and resolve these through [Exception Handling](/exceptions/).
+
+## Quick reference
 
 | | |
 | --- | --- |
-| Activities | Create one per process via [Scan Activities](/scan-activities/), e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`. Reuse the `id`s. |
-| Reader | `deviceId` = the dock / handheld / gate reader's `id` — list via [GET /rfid-readers](/rfid-readers/). |
+| Activities | Looked up via [Scan Activities](/scan-activities/), e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`. |
+| Reader | `deviceId` = the dock / handheld / gate reader's `id`, via [RFID Readers](/rfid-readers/). |
 | `transactionReference` | Delivery / document number. |
-| Per scan | `POST /epc-scan-processing/sessions` (activity + reader) → poll → `POST …/complete` → post the movement from the returned `epcs`. |
+| Per scan | `POST /epc-scan-processing/sessions` (activity + reader), poll, `POST …/complete`, post the movement from the returned `epcs`. |
 | Abandon | `POST …/cancel`. |

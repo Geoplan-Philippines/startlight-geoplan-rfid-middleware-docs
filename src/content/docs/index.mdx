@@ -5,45 +5,63 @@ description: Integration reference for driving RFID scans through the Geoplan mi
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Geoplan middleware turns reader hardware into EPC reads your system can consume. Define the business processes you scan under ([scan activities](/scan-activities/)), then open a [scan session](/epc-scan-processing/) for each read — the reader turns on, streams EPCs into the session, you read the deduped result, you stop. ETP POS and Samooha integrate through the same two modules.
+Geoplan middleware turns reader hardware into EPC reads your system can consume. Open a scan session, the reader turns on and streams EPCs into it, you read the deduped result, then stop. ETP POS and Samooha both integrate through the same core flow.
+
+## Before you start
+
+This assumes setup is already done in the Geoplan dashboard: EPC assignment, master data sync, your API key, and your scan activities. None of that is covered in this reference, this covers the integration itself.
+
+![Geoplan Middleware dashboard: API Keys page showing existing keys](../../assets/api-keys-dashboard.png)
+
+## Pick your system
+
+<CardGrid>
+  <LinkCard
+    title="ETP POS"
+    href="/etp-pos/"
+    description="Checkout scan flow, step by step."
+  />
+  <LinkCard
+    title="Samooha"
+    href="/samooha/"
+    description="Warehouse scan flow, step by step."
+  />
+</CardGrid>
+
+![Geoplan RFID middleware architecture connecting ETP POS and Samooha to store and warehouse RFID operations](../../assets/architecture-diagram.png)
+
+## Full API reference
+
+Everything above links back to these. Come here for exact field types, full error tables, and edge cases.
 
 <CardGrid>
   <LinkCard
     title="Authentication"
     href="/authentication/"
-    description="x-api-key on every request. Manage keys in the dashboard."
+    description="x-api-key on every request."
   />
   <LinkCard
     title="Scan Activities"
     href="/scan-activities/"
-    description="CRUD the processes you scan under. Required by every session."
+    description="Look up the processes you scan under."
   />
   <LinkCard
     title="EPC Scan Processing"
     href="/epc-scan-processing/"
-    description="Start / poll / complete a scan session. The core flow."
+    description="Start, poll, and complete a scan session. The core flow."
   />
   <LinkCard
     title="RFID Readers"
     href="/rfid-readers/"
-    description="List the reader devices; pick one as a session's deviceId."
+    description="List the reader devices, pick one as a session's deviceId."
   />
   <LinkCard
-    title="ETP POS"
-    href="/etp-pos/"
-    description="Checkout scan flow specifics."
-  />
-  <LinkCard
-    title="Samooha"
-    href="/samooha/"
-    description="Warehouse scan flow specifics."
+    title="Exception Handling"
+    href="/exceptions/"
+    description="Read and resolve system-raised exceptions."
   />
 </CardGrid>
 
-## Integrate in three steps
+## Other systems
 
-1. Get an API key — [Authentication](/authentication/).
-2. Create the [scan activities](/scan-activities/) for your processes (POS Sale, Goods Receipt, …). Keep their `id`s.
-3. Per scan: `POST` a [session](/epc-scan-processing/) with an activity + reader, poll it, `complete` it, read the `epcs`.
-
-![Geoplan RFID middleware architecture connecting ETP POS and Samooha to store and warehouse RFID operations](../../assets/architecture-diagram.png)
+[Qlik](/qlik/) reads the database directly, no REST API involved. [SAP (Proposed)](/sap/) is a draft goods-movement posting contract, not yet live.

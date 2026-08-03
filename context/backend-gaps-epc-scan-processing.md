@@ -56,3 +56,16 @@ _Resolved: HTTPS, synchronous, physical failure returned as an error message._
 - List endpoint hides `epcs` (only `uniqueCount`) — matches docs; keep.
 - `scan-activities`: create normalizes `code` (upper, spaces→`_`), unique → `409`; DELETE is soft-archive (`isActive=false`); archived activity can't start a session (`400`). Matches docs; keep.
 - `rfid-readers`: full CRUD already present and matches the RFID Readers doc (GET list `?status`, GET one, POST 201, PATCH, DELETE 204; `serialNumber` unique → `409`). Keep. **One consideration:** `remove()` is a hard `prisma.delete`. Once `deviceId` references a reader, a hard delete orphans session history — docs tell integrators to prefer `status: INACTIVE`. Either enforce soft-retire (block/deny delete when the reader has sessions, or switch delete to set `INACTIVE`), or leave delete hard and rely on the docs' guidance. Decide.
+
+---
+
+## SAP posting — prerequisites for the proposed `/sap/` contract (FUTURE)
+
+The docs page `/sap/` proposes the RFID → SAP goods-movement contract (Geoplan **calls** SAP-hosted endpoints; core-4 movements). Greenfield — no posting code exists. Before that contract can be fulfilled, the RFID side must be able to produce the payload:
+
+1. **`warehouseCode`** — **missing entirely** (no `warehouse`/`plant`/`location` field anywhere in the schema). Add it: either a field on `EpcScanSession`, or a `location`/`plant` field on `RFIDReader` derived onto the session at start. **Primary gap.**
+2. **Quantity per SKU** — resolve a completed session's `epcs` → SKU (reuse `epc-assignment` `resolve` / `master-data-sync`) and aggregate a count per SKU. Needs a new aggregation step; EPC→SKU data already exists.
+3. **`movementType` + `documentRef`** — map `scanActivity` → `movementType` (enum: `GOODS_RECEIPT`/`GOODS_ISSUE`/`STOCK_TRANSFER`/`INVENTORY_ADJUSTMENT`); carry `transactionReference` as `documentRef` (+ optional `documentType`).
+4. **Posting module** — a new outbound client that builds the envelope, calls SAP, and handles response `status` (`POSTED`/`FAILED`/`PARTIAL`), retries with an idempotency key (use `scanSessionId`), and routes failures to `exception-handling` (`POSTING_FAILED` already exists in `ExceptionType`).
+
+Contract details still open (see the page's "To confirm with SAP"): SAP auth + base URL, idempotency, partial-post semantics, batch/serial fields, plant vs storage-location granularity, push-vs-pull for source documents.

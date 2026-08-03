@@ -1,11 +1,11 @@
 ---
 title: EPC Scan Processing
-description: Start a scan session, stream EPC reads, close it — the core RFID read flow.
+description: Start a scan session, stream EPC reads, close it. The core RFID read flow.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-The core module. Start a **session**, the reader turns on and streams EPC reads into it; stop to close it and read the deduped result. Both ETP POS and Samooha drive scanning here. Every session references one [scan activity](/scan-activities/). All endpoints require [`x-api-key`](/authentication/).
+The core module. Start a **session** and the reader turns on, streaming EPC reads into it. Stop to close it and read the deduped result. Both ETP POS and Samooha drive scanning here. Every session references one [scan activity](/scan-activities/). All endpoints require [`x-api-key`](/authentication/).
 
 ## Base URL
 
@@ -17,10 +17,7 @@ Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on
 
 ## Session lifecycle
 
-```
-OPEN ──/complete──▶ COMPLETED
-  └───/cancel────▶ CANCELLED
-```
+![Scan session lifecycle: OPEN accepts reads; /complete transitions to COMPLETED; /cancel transitions to CANCELLED.](../../assets/session-lifecycle.png)
 
 `OPEN` accepts reads. `/complete` and `/cancel` are terminal and only work on an `OPEN` session (`409` otherwise).
 
@@ -29,22 +26,22 @@ OPEN ──/complete──▶ COMPLETED
 | actor | calls |
 | --- | --- |
 | **Your system** (ETP / Samooha) | `POST /sessions`, `GET /sessions/:id` (poll), `/complete`, `/cancel` |
-| **Reader / bridge agent** (Geoplan-managed) | `POST /sessions/:id/reads` — you don't call this |
+| **Reader / bridge agent** (Geoplan-managed) | `POST /sessions/:id/reads` (you don't call this) |
 
-## Flow — ETP POS checkout
+## ETP POS checkout flow
 
 <Steps>
 
 1. Customer's items on the counter. Cashier taps **Start**.
 2. `POST /epc-scan-processing/sessions` with the POS-sale activity and the lane reader → session `OPEN`, reader switches on.
-3. Reader scans continuously; the bridge agent appends reads to the session.
+3. Reader scans continuously. The bridge agent appends reads to the session.
 4. POS polls `GET /epc-scan-processing/sessions/:id` for the live deduped `epcs` and shows the count.
 5. Cashier taps **Stop** → `POST …/complete` → `COMPLETED`, reader off, final `epcs` returned. POS resolves EPCs → SKUs and bills.
 6. Order abandoned → `POST …/cancel` instead.
 
 </Steps>
 
-Samooha warehouse flows are identical — swap the activity (Goods Receipt, Stock Transfer, …) and the reader (dock, handheld, gate).
+Samooha warehouse flows are identical: swap the activity (Goods Receipt, Stock Transfer, …) and the reader (dock, handheld, gate).
 
 ## Session fields
 
@@ -72,7 +69,7 @@ Opens a session and starts the reader. Returns `201`.
 
 ```json
 // request
-{ "scanActivityId": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88", "transactionReference": "TXN-001" }
+{ "scanActivityId": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88", "transactionReference": "TXN-001" }
 ```
 
 ```json
@@ -84,7 +81,7 @@ Opens a session and starts the reader. Returns `201`.
     "id": "38a7393e-7750-4437-9c0f-b69db6e247b5",
     "transactionReference": "TXN-001",
     "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88",
-    "scanActivity": { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "POS_SALE", "name": "POS Sale" },
+    "scanActivity": { "id": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "code": "POS_SALE", "name": "POS Sale" },
     "status": "OPEN",
     "startedAt": "2026-07-22T02:10:00.000Z",
     "completedAt": null,
@@ -94,7 +91,7 @@ Opens a session and starts the reader. Returns `201`.
 }
 ```
 
-<Aside type="note">`deviceId` is the reader's `id` (a UUID) — list readers via [GET /rfid-readers](/rfid-readers/) and let staff pick one before scanning. SSI configures readers in the dashboard. Starting a session commands that reader over HTTPS to begin scanning; `/complete` and `/cancel` stop it. A physical reader failure is returned as an error.</Aside>
+<Aside type="note">`deviceId` is the reader's `id` (a UUID). List readers via [GET /rfid-readers](/rfid-readers/) and let staff pick one before scanning. SSI configures readers in the dashboard. Starting a session commands that reader over HTTPS to begin scanning. `/complete` and `/cancel` stop it. A physical reader failure is returned as an error.</Aside>
 
 ## GET /epc-scan-processing/sessions/:id
 
@@ -108,7 +105,7 @@ Full session including the live deduped `epcs`. Poll while `OPEN` to show progre
     "id": "38a7393e-7750-4437-9c0f-b69db6e247b5",
     "transactionReference": "TXN-001",
     "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88",
-    "scanActivity": { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "POS_SALE", "name": "POS Sale" },
+    "scanActivity": { "id": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "code": "POS_SALE", "name": "POS Sale" },
     "status": "OPEN",
     "startedAt": "2026-07-22T02:10:00.000Z",
     "completedAt": null,
@@ -120,13 +117,13 @@ Full session including the live deduped `epcs`. Poll while `OPEN` to show progre
 
 ## GET /epc-scan-processing/sessions
 
-Paginated list, ordered by `startedAt` desc. List items carry `uniqueCount` but **not** `epcs` — fetch a single session for the EPCs.
+Paginated list, ordered by `startedAt` desc. List items carry `uniqueCount` but **not** `epcs`. Fetch a single session for the EPCs.
 
 | param | type | default | notes |
 | --- | --- | --- | --- |
-| `status` | enum | — | `OPEN` \| `COMPLETED` \| `CANCELLED` |
-| `deviceId` | string | — | exact match |
-| `scanActivityId` | uuid | — | audit: every session under one process |
+| `status` | enum | - | `OPEN` \| `COMPLETED` \| `CANCELLED` |
+| `deviceId` | string | - | exact match |
+| `scanActivityId` | uuid | - | audit: every session under one process |
 | `page` | int | 1 | ≥ 1 |
 | `limit` | int | 10 | 1–50 |
 
@@ -139,7 +136,7 @@ Paginated list, ordered by `startedAt` desc. List items carry `uniqueCount` but 
       "id": "38a7393e-7750-4437-9c0f-b69db6e247b5",
       "transactionReference": "TXN-001",
       "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88",
-      "scanActivity": { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "POS_SALE", "name": "POS Sale" },
+      "scanActivity": { "id": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "code": "POS_SALE", "name": "POS Sale" },
       "status": "OPEN",
       "uniqueCount": 2,
       "startedAt": "2026-07-22T02:10:00.000Z",
@@ -152,13 +149,13 @@ Paginated list, ordered by `startedAt` desc. List items carry `uniqueCount` but 
 
 ## POST /epc-scan-processing/sessions/:id/reads
 
-Reader/bridge-facing — appends EPCs to an `OPEN` session. **Your system normally does not call this**; the reader does. Documented for completeness. Returns `200` with the full session.
+Reader/bridge-facing: appends EPCs to an `OPEN` session. **Your system normally does not call this.** The reader does. Documented for completeness. Returns `200` with the full session.
 
 | field | type | notes |
 | --- | --- | --- |
 | `epcs` | string[] | 1–1000 items, each ≤ 128 chars |
 
-EPCs are trimmed, upper-cased, and deduplicated; re-reads increment an internal count but never duplicate a session's `epcs`. `404` if the session is unknown, `409` if it is not `OPEN`.
+EPCs are trimmed, upper-cased, and deduplicated. Re-reads increment an internal count but never duplicate a session's `epcs`. `404` if the session is unknown, `409` if it is not `OPEN`.
 
 ```json
 // request
@@ -180,7 +177,7 @@ EPCs are trimmed, upper-cased, and deduplicated; re-reads increment an internal 
     "completedAt": "2026-07-22T02:10:20.000Z",
     "uniqueCount": 2,
     "epcs": ["3034F4A9…01", "3034F4A9…02"],
-    "scanActivity": { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "POS_SALE", "name": "POS Sale" },
+    "scanActivity": { "id": "7e2f9a10-4b3d-4c2a-8f61-1a9d6e4b2c10", "code": "POS_SALE", "name": "POS Sale" },
     "transactionReference": "TXN-001",
     "deviceId": "5f3b9d2a-1c44-4e8a-9b77-2a6f0d1e3c88",
     "startedAt": "2026-07-22T02:10:00.000Z"
@@ -196,7 +193,7 @@ Marks the session `CANCELLED` and stops the reader. Any reads already captured a
 
 | status | when |
 | --- | --- |
-| 400 | Invalid body/param; archived `scanActivityId`; inactive reader; empty `epcs`. |
+| 400 | Invalid body/param, archived `scanActivityId`, inactive reader, or empty `epcs`. |
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Session, activity, or reader not found. |
 | 409 | Action requires an `OPEN` session (already completed/cancelled). |

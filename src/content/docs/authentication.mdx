@@ -5,7 +5,7 @@ description: API key authentication for the Geoplan RFID middleware integration.
 
 import { Aside } from '@astrojs/starlight/components';
 
-Every request carries an `x-api-key` header. No key, or an unknown key → `401`, request not processed. Applies to **every** endpoint in this reference.
+Every request carries an `x-api-key` header. No key, or an unknown key, gets a `401` and the request isn't processed. Applies to **every** endpoint in this reference.
 
 ```http
 GET /api/v1/scan-activities HTTP/1.1
@@ -20,18 +20,8 @@ curl "https://rfid-middleware.geoplanph.com/api/v1/scan-activities" \
 
 ## Keys
 
-Manage your own keys in the Geoplan Middleware dashboard → **API Keys** — create and revoke them yourself.
+Geoplan issues your key before you start integrating. Format: `rfid_` prefix + random token, e.g. `rfid_AbC…WRGkU`.
 
-![Geoplan Middleware dashboard — API Keys page: create, list, and revoke keys](../../assets/api-keys-dashboard.png)
+Treat it as a secret. Don't commit it or embed it in client code. If it's compromised, ask Geoplan to rotate it.
 
-| | |
-| --- | --- |
-| Create | **Create a key** → name it → the secret is shown **once**. Copy it before leaving the page — it can't be retrieved later. |
-| Format | `rfid_` prefix + random token, e.g. `rfid_AbC…WRGkU`. Stored hashed; the dashboard only ever lists metadata, never the secret. |
-| Use | Send as `x-api-key` on every request. |
-| Rotate | Create a new key, switch your client to it, then **Revoke** the old one. |
-| Revoke | **Revoke** in the list — takes effect immediately. |
-| Expiry | Never expires; valid until revoked. |
-| Handling | Treat as a secret — don't commit it or embed it in client code. |
-
-<Aside type="caution">Base URL `https://rfid-middleware.geoplanph.com/api/v1` and the dashboard URL are not yet provisioned. Confirm both with Geoplan.</Aside>
+<Aside type="caution">Base URL `https://rfid-middleware.geoplanph.com/api/v1` is not yet provisioned. Confirm with Geoplan before integrating.</Aside>
