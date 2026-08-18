@@ -37,7 +37,13 @@ export default defineConfig({
 					label: 'Integrations',
 					items: [
 						{ label: 'ETP POS', slug: 'etp-pos' },
-						{ label: 'Samooha', slug: 'samooha' },
+						{
+							label: 'Samooha',
+							items: [
+								{ label: 'Overview', slug: 'samooha' },
+								{ label: 'Master Data', slug: 'samooha/master-data' },
+							],
+						},
 					],
 				},
 				{
