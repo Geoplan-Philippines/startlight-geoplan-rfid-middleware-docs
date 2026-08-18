@@ -1,0 +1,89 @@
+---
+title: Samooha Master Data
+description: Samooha → Geoplan master-data sync for the warehouse RFID integration — scope, cadence, identifiers, and what is still open.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Master data is what makes a scan resolvable. Transaction documents carry the **SKU code only** — Geoplan resolves barcode, vendor product code and product details from the master data it already holds. A SKU that is not in the synced master cannot be matched.
+
+<Aside type="caution">Agreed design as of the 2026-08-14 workshop. Field schemas, the delta call itself, and the caller are not settled — see [Still open](#still-open).</Aside>
+
+## Direction
+
+One-way, **Samooha → Geoplan**. Samooha exposes its existing product master and vendor product mapping; Geoplan adapts them on its side. Samooha stays the owner of inventory.
+
+## What syncs
+
+| data | status |
+| --- | --- |
+| Product master / articles, with the unique identifier Samooha uses | agreed |
+| Vendor Product Mapping (VPM) — used for goods receipt and goods delivery | agreed |
+| Customer info | agreed. Customer-level *mapping* is not required for dispatch; article-level mapping is enough |
+| Location master | undecided — may be available in Samooha |
+
+## What doesn't
+
+| data | why |
+| --- | --- |
+| Inventory master / stock levels | Geoplan doesn't need stock levels; variance logic stays in Samooha |
+| EPC | Housed on the Geoplan side, paired to Samooha's SKU / item code. Tags are written at the factory by the principal, and RFID data is not kept in Samooha |
+
+Customer Product Mapping (CPM) is a distinct structure from VPM and isn't used for barcode identification — barcodes resolve through the product master / VPM.
+
+## Cadence and mechanism
+
+| | |
+| --- | --- |
+| Initial load | Full master data, delivered as a **CSV file** |
+| Ongoing | **Delta records** — additions, edits, deletions — over **API** |
+| Schedule | **Nightly**. Samooha's proposal runs a daily task scheduler around midnight |
+| Scope | RFID-enabled brands only (ON in the first phase). Samooha filters before sending |
+
+CSV for the initial load and API for deltas was agreed on 2026-08-14. Treat delta-over-API as agreed intent, not a proven mechanism: whether the existing API documentation covers delta records is still being verified, and the caller for that call has not been confirmed separately.
+
+## Identifiers
+
+| identifier | held by | role |
+| --- | --- | --- |
+| SKU / item code | Samooha | The correlation key. Every EPC is paired to one |
+| EPC | Geoplan | Factory-written by the principal; never sent to Samooha |
+| EAN | Samooha, in the Barcode field | The scan identifier. Geoplan maps EAN → SKU through the VPM master |
+| VPM / vendor product code | Samooha | Vendor-side product code, carried in the mapping — not in transaction payloads |
+
+**Barcode field change.** Samooha's product-master Barcode field currently holds Samooha's own internal SKU rather than a real barcode. For ON-brand items it is being repopulated with the item's EAN; that is what makes barcode fallback resolvable at the warehouse. Conditional on the brand confirming the vendor product mapping carries GTIN/EAN.
+
+## What Samooha holds today
+
+Mapping reference from the 2026-08-12 screen review, not an agreed payload.
+
+VPM header: `Mapping Code`, `Name`, `Description`, `Vendor`, `Active`. Line grid: `Product#`, `Barcode`, `Product Name`, `Vendor Product#`, `Vendor Product Name`, `Vendor Product Item`, `Minimum Order Qty`, `Order Pack Qty`, filterable by product brand. VPM sits under the vendor, and the vendor product code and the barcode are meant to be the same value.
+
+Samooha's June proposal put the daily VPM export at: Vendor Name · VPM Code · SKU Codes · SKU Names · VPM Product Codes · VPM Product Names. That is the only field list on record, it predates the workshops, and it is unconfirmed.
+
+## Why it gates every transaction
+
+Transaction payloads were cut back to the SKU code alone, so the sync is a hard dependency of every goods receipt, goods delivery, customer return and vendor return:
+
+- Descriptions, barcodes and vendor product codes are resolved from the master, not read from the document.
+- A SKU created in Samooha after the last nightly sync isn't resolvable until the next one.
+- Barcode fallback at the warehouse depends on the EAN being in the master.
+
+## Auth
+
+Same as the rest of this reference: `x-api-key` on every call, one key for all Samooha calls. See [Authentication](/authentication/).
+
+## Still open
+
+- Field-level schema, types and code lists.
+- Delta mechanism — changed-since timestamp, file compare, or event stream.
+- Caller and direction for the delta call.
+- Whether the existing API documentation covers delta records.
+- Article volume, expected daily deltas, sync window.
+- Whether customer and vendor masters are delta-synced or one-time files.
+- Whether nightly delta is enough, or a same-day article upsert is needed.
+- Behaviour when a scanned EPC or SKU is not in the synced master.
+- Confirmation that the vendor product mapping carries GTIN/EAN.
+- Barcode ↔ EPC mapping — how it is done, and at which stage the two are associated.
+- Whether a location master is synced.
+- Manual CSV upload into the RFID platform — datasets, users, permissions.
