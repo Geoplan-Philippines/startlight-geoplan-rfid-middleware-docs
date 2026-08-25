@@ -4,12 +4,6 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	redirects: {
-		'/master-data-sync': '/',
-		'/contract/product-endpoint': '/',
-		'/contract/source-data': '/',
-		'/contract/access': '/',
-	},
 	integrations: [
 		starlight({
 			title: 'Geoplan RFID Middleware',
@@ -28,23 +22,26 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Start here',
+					items: [{ label: 'Overview', link: '/' }],
+				},
+				{
+					label: 'ON Principal',
+					items: [{ label: 'Master Data Sync', slug: 'on-principal/master-data-sync' }],
+				},
+				{
+					label: 'Samooha',
 					items: [
-						{ label: 'Overview', link: '/' },
-						{ label: 'Authentication', slug: 'authentication' },
+						{ label: 'Overview', slug: 'samooha' },
+						{ label: 'Authentication', slug: 'samooha/authentication' },
+						{ label: 'Master Data', slug: 'samooha/master-data' },
+						{ label: 'Scan Activities', slug: 'samooha/scan-activities' },
+						{ label: 'Scan Sessions', slug: 'samooha/scan-sessions' },
+						{ label: 'Errors & Retries', slug: 'samooha/errors-and-retries' },
 					],
 				},
 				{
 					label: 'Integrations',
-					items: [
-						{ label: 'ETP POS', slug: 'etp-pos' },
-						{
-							label: 'Samooha',
-							items: [
-								{ label: 'Overview', slug: 'samooha' },
-								{ label: 'Master Data', slug: 'samooha/master-data' },
-							],
-						},
-					],
+					items: [{ label: 'ETP POS', slug: 'etp-pos' }],
 				},
 				{
 					label: 'Reference',

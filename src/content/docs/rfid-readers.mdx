@@ -3,7 +3,7 @@ title: RFID Readers
 description: List the reader devices to pick a session's deviceId.
 ---
 
-An RFID reader is a physical device a [scan session](/epc-scan-processing/) runs on. SSI registers and maintains readers in the Geoplan Middleware dashboard. You only **read** the list here to display the available devices and let staff pick one before scanning. Reference the chosen reader by its `id` as the session's `deviceId`. All endpoints require [`x-api-key`](/authentication/).
+An RFID reader is a physical device a [scan session](/epc-scan-processing/) runs on. SSI registers and maintains readers in the Geoplan Middleware dashboard. You only **read** the list here to display the available devices and let staff pick one before scanning. Reference the chosen reader by its `id` as the session's `deviceId`. All endpoints require `x-api-key`. Authentication: TBD.
 
 ## Base URL
 
@@ -11,7 +11,7 @@ An RFID reader is a physical device a [scan session](/epc-scan-processing/) runs
 https://rfid-middleware.geoplanph.com/api/v1
 ```
 
-Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limits are integration-specific. Samooha uses 60 requests per 5 minutes.
 
 ## Fields
 
@@ -67,4 +67,4 @@ Single reader by `id`. `404` if unknown.
 | 400 | Invalid `status` param. |
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Reader not found. |
-| 429 | Rate limit exceeded (100 req/60s). |
+| 429 | Rate limit exceeded. Samooha: 60 requests per 5 minutes. |

@@ -5,7 +5,7 @@ description: Start a scan session, stream EPC reads, close it. The core RFID rea
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-The core module. Start a **session** and the reader turns on, streaming EPC reads into it. Stop to close it and read the deduped result. Both ETP POS and Samooha drive scanning here. Every session references one [scan activity](/scan-activities/). All endpoints require [`x-api-key`](/authentication/).
+The core module. Start a **session** and the reader turns on, streaming EPC reads into it. Stop to close it and read the deduped result. Both ETP POS and Samooha drive scanning here. Every session references one [scan activity](/scan-activities/). All endpoints require `x-api-key`. Authentication: TBD.
 
 ## Base URL
 
@@ -13,7 +13,7 @@ The core module. Start a **session** and the reader turns on, streaming EPC read
 https://rfid-middleware.geoplanph.com/api/v1
 ```
 
-Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on the paginated list). Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+Success responses are wrapped as `{ statusCode, message, data }` (plus `meta` on the paginated list). Errors are `{ statusCode, message, error, path, timestamp }`. Rate limits are integration-specific. Samooha uses 60 requests per 5 minutes.
 
 ## Session lifecycle
 
@@ -197,4 +197,4 @@ Marks the session `CANCELLED` and stops the reader. Any reads already captured a
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Session, activity, or reader not found. |
 | 409 | Action requires an `OPEN` session (already completed/cancelled). |
-| 429 | Rate limit exceeded (100 req/60s). |
+| 429 | Rate limit exceeded. Samooha: 60 requests per 5 minutes. |

@@ -1,116 +1,42 @@
 ---
 title: Samooha
-description: Driving RFID warehouse scans from Samooha through the Geoplan middleware.
+description: Samooha warehouse RFID integration with Geoplan.
 ---
 
-import { Steps } from '@astrojs/starlight/components';
+Samooha calls Geoplan over REST and HTTPS for four warehouse RFID flows. Geoplan manages scan sessions, EPC data, and EPC-to-SKU mapping. Samooha remains the source of transaction documents and owns inventory updates.
 
-Samooha scans warehouse processes: goods receipt, stock transfer, cycle count, returns. Each process is one scan session. Open it under the matching activity, let the dock, handheld, or gate reader stream EPCs, then complete it and post the movement from the returned EPCs.
+The diagram shows the Samooha, warehouse, Geoplan middleware, and ON Principal connections:
 
-## Before you start
+![Samooha and RMK warehouse connections to the Geoplan RFID middleware](../../../assets/samooha/integration-architecture.png)
 
-- API key issued. See [Authentication](/authentication/).
-- Your process activities defined in the dashboard, e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`.
-- Dock, handheld, and gate readers registered in the dashboard.
+## Scope
 
-## Implementation
+| Flow | Data exchange | Source document reference |
+| --- | --- | --- |
+| Goods Receipt | Samooha sends the document, then retrieves scanned quantity per SKU | Purchase Invoice |
+| Goods Delivery | Samooha sends the document | Sales Order |
+| Customer Returns | Samooha sends the document | Credit Note |
+| Vendor Returns | Samooha sends the document | Debit Note |
 
-<Steps>
+Goods Delivery, Customer Returns, and Vendor Returns have no scan-result return leg. Every request still receives an HTTP acknowledgement.
 
-1. **Authenticate.** Every call below sends `x-api-key`. See [Authentication](/authentication/).
+RFID scope excludes put-away, picking, packing, stock transfer, and cycle count.
 
-2. **Find your reader's `deviceId`.** List readers and take the `id` of the dock, handheld, or gate reader running this process.
+## Integration rules
 
-   ```json
-   // GET /rfid-readers?status=ACTIVE
-   {
-     "statusCode": 200,
-     "message": "Success",
-     "data": [
-       { "id": "9b4d2a71-6c3f-4e88-a1d5-3f7b9c2e4a60", "name": "Dock 2 fixed reader", "status": "ACTIVE" }
-     ]
-   }
-   ```
+- Samooha initiates every integration exchange. Geoplan does not expose webhooks.
+- Transaction calls use `POST` for audit integrity.
+- Samooha filters transaction lines to RFID-enabled ON products.
+- Product identity in transaction lines is the SKU. Barcode, VPM code, and product details come from synced master data.
+- Geoplan returns SKU and scanned quantity for Goods Receipt. EPC values stay in Geoplan.
+- One API key covers the Samooha integration within an environment.
 
-   Full field list: [RFID Readers](/rfid-readers/).
+## Integration order
 
-3. **Find your activity's `id`.** Your process activities are already defined in the dashboard. Look them up once at startup and cache the `id`s.
-
-   ```json
-   // GET /scan-activities?isActive=true
-   {
-     "statusCode": 200,
-     "message": "Success",
-     "data": [
-       { "id": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "code": "GOODS_RECEIPT", "name": "Goods Receipt", "isActive": true },
-       { "id": "d4f7c2b1-3e9a-4a6d-9c58-7b2e1f4a9d33", "code": "STOCK_TRANSFER", "name": "Stock Transfer", "isActive": true },
-       { "id": "f1a3b5c7-2d4e-4f6a-8b91-3c5d7e9f1a22", "code": "CYCLE_COUNT", "name": "Cycle Count", "isActive": true }
-     ]
-   }
-   ```
-
-   Full field list: [Scan Activities](/scan-activities/).
-
-4. **Open a session.** Pick the activity for the process running, the reader from step 2, and your own delivery/document number as `transactionReference`.
-
-   ```json
-   // POST /epc-scan-processing/sessions
-   // request
-   { "scanActivityId": "a2c0b6d4-6f1e-4a3b-8c77-2f9f1d4e5b10", "deviceId": "9b4d2a71-6c3f-4e88-a1d5-3f7b9c2e4a60", "transactionReference": "GRN-004521" }
-   ```
-
-   ```json
-   // 201
-   {
-     "statusCode": 201,
-     "message": "Success",
-     "data": {
-       "id": "52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77",
-       "status": "OPEN",
-       "uniqueCount": 0,
-       "epcs": []
-     }
-   }
-   ```
-
-   The reader turns on as soon as this returns.
-
-5. **Show the live count.** Poll while the session is `OPEN` to track progress.
-
-   ```json
-   // GET /epc-scan-processing/sessions/52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77
-   { "statusCode": 200, "message": "Success", "data": { "status": "OPEN", "uniqueCount": 3, "epcs": ["3034F4A9…21", "3034F4A9…22", "3034F4A9…23"] } }
-   ```
-
-6. **Close it out.** Complete the session, take the final `epcs`, and post the movement.
-
-   ```json
-   // POST /epc-scan-processing/sessions/52b1f8e3-2a4c-4d97-8e13-6f9a0c2d5e77/complete
-   { "statusCode": 200, "message": "Success", "data": { "status": "COMPLETED", "uniqueCount": 3, "epcs": ["3034F4A9…21", "3034F4A9…22", "3034F4A9…23"] } }
-   ```
-
-7. **Process abandoned instead?** Call `/cancel` on the same session in place of `/complete`. No movement gets posted.
-
-</Steps>
-
-Full request/response detail, field types, and lifecycle rules: [EPC Scan Processing](/epc-scan-processing/).
-
-## Exceptions you might see
-
-| type | when |
+| Page | Use |
 | --- | --- |
-| `UNKNOWN_EPC` | A scanned EPC has no matching master data. |
-| `STOCK_MISMATCH` | Scanned quantity doesn't match expected stock. |
-| `POSTING_FAILED` | The movement didn't post downstream. |
-
-Read and resolve these through [Exception Handling](/exceptions/).
-
-## Quick reference
-
-| | |
-| --- | --- |
-| Activities | Looked up via [Scan Activities](/scan-activities/), e.g. `GOODS_RECEIPT`, `STOCK_TRANSFER`, `CYCLE_COUNT`. |
-| Reader | `deviceId` = the dock / handheld / gate reader's `id`, via [RFID Readers](/rfid-readers/). |
-| `transactionReference` | Delivery / document number. |
-| Per scan | `POST /epc-scan-processing/sessions` (activity + reader), poll, `POST …/complete`, post the movement from the returned `epcs`. |
-| Abandon | `POST …/cancel`. |
+| [Authentication](/samooha/authentication/) | Send the integration API key |
+| [Master Data](/samooha/master-data/) | Load product data before transaction calls |
+| [Scan Activities](/samooha/scan-activities/) | Use the four fixed activity IDs |
+| [Scan Sessions](/samooha/scan-sessions/) | Draft session API, flow rules, and known limitations |
+| [Errors & Retries](/samooha/errors-and-retries/) | HTTP status reference |

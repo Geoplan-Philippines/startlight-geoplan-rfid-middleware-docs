@@ -5,7 +5,7 @@ description: Geoplan middleware endpoints for reading and resolving exceptions.
 
 import { Aside } from '@astrojs/starlight/components';
 
-Exceptions raised by the middleware when something needs manual review: unknown EPC, stock mismatch, failed posting, failed deactivation. All endpoints require [`x-api-key`](/authentication/).
+Exceptions raised by the middleware when something needs manual review: unknown EPC, stock mismatch, failed posting, failed deactivation. All endpoints require `x-api-key`. Authentication: TBD.
 
 No endpoint creates an exception. The middleware raises them internally. Integrators only read and resolve.
 
@@ -115,4 +115,4 @@ Marks an exception resolved.
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Exception not found. |
 | 409 | `resolve` only: exception is already `RESOLVED`. |
-| 429 | Rate limit exceeded (100 req/60s). |
+| 429 | Rate limit exceeded. Samooha: 60 requests per 5 minutes. |

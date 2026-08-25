@@ -1,18 +1,19 @@
 # Geoplan RFID integration docs
 
-Starlight documentation for ETP POS and Samooha engineers integrating product master data with the Geoplan RFID middleware.
-
-Current published scope: **master-data sync only**.
+Starlight documentation for engineers integrating with the Geoplan RFID middleware.
 
 ## Content map
 
-- `/` — integration overview and architecture
-- `/etp-pos/` — ETP POS source ownership, access, and Geoplan mapping boundary
-- `/samooha/` — Samooha source ownership, access, and Geoplan mapping boundary
-- `/contract/access/` — provider-specific source access and operational limits
-- `/contract/source-data/` — provider-native data intake and Geoplan adapter responsibilities
+- `/` - start here
+- `/on-principal/master-data-sync/` - ON Principal section
+- `/samooha/` - Samooha integration overview
+- `/samooha/authentication/` - Samooha access
+- `/samooha/master-data/` - Samooha product master sync
+- `/samooha/scan-activities/` - fixed activity IDs
+- `/samooha/scan-sessions/` - draft Samooha session contract and limitations
+- `/samooha/errors-and-retries/` - HTTP status reference
 
-Providers keep their existing master-data shapes. Shared guidance describes the adapter boundary; it does not define a schema that ETP POS or Samooha must implement.
+Providers expose their existing master data. Geoplan owns adaptation.
 
 ## Development
 

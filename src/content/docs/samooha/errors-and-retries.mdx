@@ -1,0 +1,29 @@
+---
+title: Errors & Retries
+description: HTTP status reference for the Samooha integration.
+---
+
+Geoplan uses standard HTTP status codes to report request results.
+
+Samooha may send 60 requests per 5 minutes. Exceeding the limit returns `429`.
+
+| Status | Meaning |
+| --- | --- |
+| `200` | Request completed successfully |
+| `201` | New resource created successfully |
+| `204` | Request succeeded, but nothing is returned |
+| `301` | Resource permanently moved to another URL |
+| `302` | Resource temporarily redirected |
+| `304` | Cached version can still be used |
+| `400` | Request is invalid or malformed |
+| `401` | Authentication is required or invalid |
+| `403` | Access to the resource is not allowed |
+| `404` | Requested resource does not exist |
+| `405` | HTTP method is not supported for the endpoint |
+| `409` | Request conflicts with the current resource state |
+| `422` | Request validation failed |
+| `429` | Too many requests sent in a short period |
+| `500` | Unexpected server-side error |
+| `502` | Invalid response received from an upstream service |
+| `503` | Server is temporarily unavailable |
+| `504` | Upstream service took too long to respond |

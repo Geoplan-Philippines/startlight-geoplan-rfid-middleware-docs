@@ -5,7 +5,7 @@ description: Look up the business processes RFID scan sessions run under.
 
 A **scan activity** is the business process a scan runs under: Goods Receipt, POS Sale, Stock Transfer, Customer Returns, cycle count, and so on. Every [scan session](/epc-scan-processing/) references exactly one **active** activity, so reads are grouped and audited by process.
 
-Activities are set up in the dashboard before you integrate. Use these endpoints to look up the `id` you need for a session. All require [`x-api-key`](/authentication/).
+Activities are set up in the dashboard before you integrate. Use these endpoints to look up the `id` you need for a session. All require `x-api-key`. Authentication: TBD.
 
 ## Base URL
 
@@ -13,7 +13,7 @@ Activities are set up in the dashboard before you integrate. Use these endpoints
 https://rfid-middleware.geoplanph.com/api/v1
 ```
 
-Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limit: 100 requests / 60s.
+Success responses are wrapped as `{ statusCode, message, data }`. Errors are `{ statusCode, message, error, path, timestamp }`. Rate limits are integration-specific. Samooha uses 60 requests per 5 minutes.
 
 ## Fields
 
@@ -55,4 +55,4 @@ Single activity by `id`. `404` if unknown.
 | 400 | Invalid `isActive` param. |
 | 401 | Missing or invalid `x-api-key`. |
 | 404 | Activity not found. |
-| 429 | Rate limit exceeded (100 req/60s). |
+| 429 | Rate limit exceeded. Samooha: 60 requests per 5 minutes. |

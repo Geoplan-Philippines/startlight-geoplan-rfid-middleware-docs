@@ -1,0 +1,35 @@
+---
+title: Authentication
+description: Authentication for Samooha calls to Geoplan.
+---
+
+Samooha uses one API key for all Geoplan requests.
+
+## Staging access
+
+| Item | Value |
+| --- | --- |
+| Base URL | `https://api-stg-sling.rgoc.com.ph/api/v1` |
+| Create or rotate key | [Staging API Keys](https://web-stg-sling.rgoc.com.ph/api-keys) |
+| Rate limit | 60 requests per 5 minutes |
+| Source IP allowlist | None |
+| Client certificate | None |
+
+```http
+x-api-key: <api-key>
+```
+
+| Rule | Value |
+| --- | --- |
+| Header | `x-api-key` |
+| Coverage | All Samooha API calls |
+| Missing or invalid key | `401 Unauthorized` |
+
+Geoplan also supports bearer tokens. The agreed Samooha method is the API key.
+
+```bash
+curl "https://api-stg-sling.rgoc.com.ph/api/v1/master-data-sync/status" \
+  --header "x-api-key: $SAMOOHA_API_KEY"
+```
+
+Keep the key out of URLs, request bodies, logs, and screenshots.
