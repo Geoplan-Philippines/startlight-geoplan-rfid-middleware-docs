@@ -12,6 +12,8 @@ Starlight documentation for engineers integrating with the Geoplan RFID middlewa
 - `/samooha/scan-activities/` - fixed activity IDs
 - `/samooha/scan-sessions/` - draft Samooha session contract and limitations
 - `/samooha/errors-and-retries/` - HTTP status reference
+- `/etp-pos/` - ETP POS overview
+- `/sap/` - SAP overview
 
 Providers expose their existing master data. Geoplan owns adaptation.
 

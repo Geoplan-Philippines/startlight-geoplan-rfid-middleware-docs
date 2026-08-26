@@ -2,7 +2,7 @@
 
 Reviewed 2026-08-25 against `C:\Users\ppp\Documents\ssi_project`, the current documentation, and the middleware implementation.
 
-## Master-data delta call direction
+## Samooha master-data delta call direction
 
 | Source | Current position |
 | --- | --- |
@@ -22,6 +22,10 @@ The published Samooha value is settled. Middleware enforcement must be changed b
 
 ## Resolved in the documentation
 
+- Geoplan pulls ON master data directly from Nedap Harmony with a bearer JWT and `read:masterdata` scope.
+- The deprecated Harmony list endpoint is replaced by `POST /api/{workspaceId}/master-data/v1/paginate` for the Geoplan read flow.
+- REST/CSV product import into Harmony and Geoplan's REST/JSON read flow are documented as separate interfaces.
+- The master-data diagram now shows the Geoplan request and paginated Nedap response in the correct directions. The original image remains available.
 - Samooha master data now has its own page.
 - Obsolete route redirects were removed.
 - Published Samooha pages no longer advertise 100 requests per 60 seconds.

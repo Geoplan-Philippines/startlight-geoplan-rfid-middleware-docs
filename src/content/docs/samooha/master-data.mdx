@@ -3,19 +3,21 @@ title: Master Data
 description: Samooha product master sync to Geoplan.
 ---
 
-Samooha exposes its existing product master and vendor product mapping. ON/Nedap supplies EPC master data directly to Geoplan, not through Samooha. Geoplan combines both sources for RFID matching.
+Samooha exposes its existing product master and vendor product mapping. Geoplan retrieves ON master data directly from Nedap Harmony, not through Samooha. Geoplan combines both sources for RFID matching.
 
-![Master data sync architecture showing Samooha product data, ON Principal EPC data, and the Geoplan unified product master](../../../assets/samooha/master-data-sync.png)
+![Master data sync architecture showing Samooha product data and a direct Geoplan pull from Nedap Harmony](../../../assets/samooha/master-data-sync-revised.png)
 
 ## Data sources
 
 | Source | Data | Responsibility |
 | --- | --- | --- |
 | Samooha | SKU, Barcode populated with EAN, article data, VPM | Expose current product data |
-| ON/Nedap | EPC master and its UPC or GTIN association | Send EPC data directly to Geoplan |
+| ON/Nedap | Harmony master-data records and EPC-to-master lookup | Expose the Harmony API for Geoplan to pull and adapt |
 | Geoplan | EPC-to-product mapping and unified product master | Adapt both source formats and retain RFID data |
 
 Inventory balances and inventory rules stay in Samooha.
+
+See [ON Principal Master Data Sync](/on-principal/master-data-sync/) for the Harmony endpoint, authentication, pagination, and EPC lookup contract.
 
 ## Sync sequence
 

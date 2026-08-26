@@ -32,8 +32,6 @@ ETP POS scans at checkout. A cashier's **Start** opens a scan session and the la
    }
    ```
 
-   Full field list: [RFID Readers](/rfid-readers/).
-
 3. **Find your activity's `id`.** Your `POS_SALE` activity is already defined in the dashboard. Look it up once at startup and cache the `id`.
 
    ```json
@@ -46,8 +44,6 @@ ETP POS scans at checkout. A cashier's **Start** opens a scan session and the la
      ]
    }
    ```
-
-   Full field list: [Scan Activities](/scan-activities/).
 
 4. **Cashier taps Start.** Open a session with the activity and reader from steps 2-3, plus your own bill/order number as `transactionReference`.
 
@@ -91,8 +87,6 @@ ETP POS scans at checkout. A cashier's **Start** opens a scan session and the la
 
 </Steps>
 
-Full request/response detail, field types, and lifecycle rules: [EPC Scan Processing](/epc-scan-processing/).
-
 ## Exceptions you might see
 
 | type | when |
@@ -101,14 +95,12 @@ Full request/response detail, field types, and lifecycle rules: [EPC Scan Proces
 | `POSTING_FAILED` | The sale didn't post downstream. |
 | `DEACTIVATION_FAILED` | Tag deactivation after sale didn't complete. |
 
-Read and resolve these through [Exception Handling](/exceptions/).
-
 ## Quick reference
 
 | | |
 | --- | --- |
-| Activity | `POS_SALE`, looked up via [Scan Activities](/scan-activities/). |
-| Reader | `deviceId` = the lane flatbed reader's `id`, via [RFID Readers](/rfid-readers/). |
+| Activity | `POS_SALE`, looked up through `GET /scan-activities`. |
+| Reader | `deviceId` = the lane flatbed reader's `id`, from `GET /rfid-readers`. |
 | `transactionReference` | POS bill / order number. |
 | Start | `POST /epc-scan-processing/sessions` on cashier **Start**. |
 | Progress | Poll `GET /epc-scan-processing/sessions/:id` to show the live count. |

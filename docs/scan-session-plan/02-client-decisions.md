@@ -11,7 +11,7 @@ These are the remaining business choices. The KB and current backend do not sett
 3. For each flow, state which reader type is used and whether the operator or Samooha chooses the reader.
 4. State what Samooha should do when a reader is offline or already in use.
 5. Confirm that only Credit Notes and Debit Notes **with inventory movement** are sent to Geoplan.
-6. Define the final unknown SKU or EPC behavior. Until confirmed, UAT data must contain only mapped values.
+6. Define what Samooha does when Harmony's EPC-to-master lookup returns no mapped item. The lookup endpoint is known; the no-match business rule is not. Until confirmed, UAT data must contain only mapped values.
 7. For the three Goods Receipt retries, provide the delay or backoff and the failures that qualify. State whether the other three flows use the same retry rule.
 
 Short answers are enough. Screenshots are not needed for these decisions.

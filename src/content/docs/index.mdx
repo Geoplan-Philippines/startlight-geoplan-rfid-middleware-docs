@@ -1,67 +1,41 @@
 ---
 title: Geoplan RFID integration
-description: Integration reference for driving RFID scans through the Geoplan middleware from ETP POS and Samooha.
+description: Integration entry point for ON Principal, Samooha, ETP POS, and SAP.
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Geoplan middleware turns reader hardware into EPC reads your system can consume. Open a scan session, the reader turns on and streams EPCs into it, you read the deduped result, then stop. ETP POS and Samooha both integrate through the same core flow.
+Geoplan connects RFID readers, master data, and transaction systems. Start with the system you are integrating.
 
 ## Before you start
 
-This assumes setup is already done in the Geoplan dashboard: EPC assignment, master data sync, your API key, and your scan activities. None of that is covered in this reference, this covers the integration itself.
+Connection setup uses the Geoplan dashboard for API keys, scan activities, readers, and EPC assignment.
 
 ![Geoplan Middleware dashboard: API Keys page showing existing keys](../../assets/api-keys-dashboard.png)
 
-## Pick your system
+## Integrations
 
 <CardGrid>
   <LinkCard
-    title="ETP POS"
-    href="/etp-pos/"
-    description="Checkout scan flow, step by step."
+    title="ON Principal"
+    href="/on-principal/master-data-sync/"
+    description="Nedap Harmony master data and EPC lookup."
   />
   <LinkCard
     title="Samooha"
     href="/samooha/"
-    description="Warehouse scan flow, step by step."
+    description="Warehouse master data and scan sessions."
+  />
+  <LinkCard
+    title="ETP POS"
+    href="/etp-pos/"
+    description="Checkout RFID scan flow."
+  />
+  <LinkCard
+    title="SAP"
+    href="/sap/"
+    description="Proposed goods-movement integration."
   />
 </CardGrid>
 
 ![Geoplan RFID middleware architecture connecting ETP POS and Samooha to store and warehouse RFID operations](../../assets/architecture-diagram.png)
-
-## Full API reference
-
-Everything above links back to these. Come here for exact field types, full error tables, and edge cases.
-
-<CardGrid>
-  <LinkCard
-    title="Authentication (TBD)"
-    href="/samooha/authentication/"
-    description="x-api-key on every request. Now under Samooha; general auth page TBD."
-  />
-  <LinkCard
-    title="Scan Activities"
-    href="/scan-activities/"
-    description="Look up the processes you scan under."
-  />
-  <LinkCard
-    title="EPC Scan Processing"
-    href="/epc-scan-processing/"
-    description="Start, poll, and complete a scan session. The core flow."
-  />
-  <LinkCard
-    title="RFID Readers"
-    href="/rfid-readers/"
-    description="List the reader devices, pick one as a session's deviceId."
-  />
-  <LinkCard
-    title="Exception Handling"
-    href="/exceptions/"
-    description="Read and resolve system-raised exceptions."
-  />
-</CardGrid>
-
-## Other systems
-
-[Qlik](/qlik/) reads the database directly, no REST API involved. [SAP (Proposed)](/sap/) is a draft goods-movement posting contract, not yet live.

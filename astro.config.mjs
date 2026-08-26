@@ -7,7 +7,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Geoplan RFID Middleware',
-			description: 'ETP POS and Samooha RFID scan integration reference for the Geoplan middleware.',
+			description: 'Integration reference for the Geoplan RFID middleware.',
 			tagline: 'RFID scan integration reference',
 			logo: {
 				src: './src/assets/geoplan-logo.png',
@@ -40,24 +40,12 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Integrations',
-					items: [{ label: 'ETP POS', slug: 'etp-pos' }],
+					label: 'ETP POS',
+					items: [{ label: 'Overview', slug: 'etp-pos' }],
 				},
 				{
-					label: 'Reference',
-					items: [
-						{ label: 'Scan Activities', slug: 'scan-activities' },
-						{ label: 'EPC Scan Processing', slug: 'epc-scan-processing' },
-						{ label: 'RFID Readers', slug: 'rfid-readers' },
-						{ label: 'Exception Handling', slug: 'exceptions' },
-					],
-				},
-				{
-					label: 'Other systems',
-					items: [
-						{ label: 'Qlik', slug: 'qlik' },
-						{ label: 'SAP (Proposed)', slug: 'sap' },
-					],
+					label: 'SAP',
+					items: [{ label: 'Overview', slug: 'sap' }],
 				},
 			],
 		}),
