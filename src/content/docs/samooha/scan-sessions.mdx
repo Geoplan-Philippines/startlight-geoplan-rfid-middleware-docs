@@ -22,7 +22,7 @@ Samooha sends GRN, CRN, GD, and VRN documents with `POST /api/v1/transaction-doc
 ## Samooha flow rules
 
 | Flow | Activity | `transactionReference` | Trigger | Agreed result to Samooha |
-| --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | Goods Receipt | `GOODS_RECEIPT` | Purchase Invoice | Document creation | SKU and scanned quantity |
 | Goods Delivery | `GOODS_DELIVERY` | Sales Order | Confirmation or posting | HTTP acknowledgement only |
 | Customer Returns | `CUSTOMER_RETURNS` | Credit Note | Confirmation or posting | HTTP acknowledgement only |
@@ -59,7 +59,7 @@ Only an `OPEN` session can accept reads, complete, or cancel. Repeating a termin
 </Steps>
 
 | Method | Path | Caller | Result |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | `POST` | `/epc-scan-processing/sessions` | Samooha | Create an `OPEN` session. Returns `201`. |
 | `GET` | `/epc-scan-processing/sessions/{sessionId}` | Samooha | Read one session, including EPCs. |
 | `GET` | `/epc-scan-processing/sessions` | Samooha | List sessions without EPC arrays. |
@@ -144,7 +144,7 @@ x-api-key: <api-key>
 ```
 
 | Query | Type | Default | Rule |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | `status` | enum | None | `OPEN`, `COMPLETED`, or `CANCELLED`. |
 | `deviceId` | string | None | Exact match. |
 | `scanActivityId` | UUID | None | Filter by one activity. |
