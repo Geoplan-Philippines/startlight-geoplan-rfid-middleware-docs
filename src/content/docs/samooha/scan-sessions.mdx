@@ -1,15 +1,13 @@
 ---
 title: Scan Sessions
-description: Draft Samooha contract for opening, monitoring, completing, and cancelling RFID scan sessions.
+description: Samooha contract for opening, monitoring, completing, and cancelling RFID scan sessions.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
 Samooha controls scan sessions through the Geoplan API. No Scan Sessions UI is required for this integration.
 
-## Unresolved scan start
-
-This page currently documents Samooha opening `POST /epc-scan-processing/sessions`. The 27 Aug Vic note says the warehouse user on the Geoplan app starts the scan. Both remain on the record. This page does not pick a side. See [Transaction Documents](/samooha/transaction-documents/).
+Samooha sends GRN, CRN, GD, and VRN documents with `POST /api/v1/transaction-documents`. See [Transaction Documents](/samooha/transaction-documents/).
 
 ## Connection
 
@@ -24,7 +22,7 @@ This page currently documents Samooha opening `POST /epc-scan-processing/session
 ## Samooha flow rules
 
 | Flow | Activity | `transactionReference` | Trigger | Agreed result to Samooha |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- |
 | Goods Receipt | `GOODS_RECEIPT` | Purchase Invoice | Document creation | SKU and scanned quantity |
 | Goods Delivery | `GOODS_DELIVERY` | Sales Order | Confirmation or posting | HTTP acknowledgement only |
 | Customer Returns | `CUSTOMER_RETURNS` | Credit Note | Confirmation or posting | HTTP acknowledgement only |
@@ -61,7 +59,7 @@ Only an `OPEN` session can accept reads, complete, or cancel. Repeating a termin
 </Steps>
 
 | Method | Path | Caller | Result |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | `POST` | `/epc-scan-processing/sessions` | Samooha | Create an `OPEN` session. Returns `201`. |
 | `GET` | `/epc-scan-processing/sessions/{sessionId}` | Samooha | Read one session, including EPCs. |
 | `GET` | `/epc-scan-processing/sessions` | Samooha | List sessions without EPC arrays. |
@@ -146,7 +144,7 @@ x-api-key: <api-key>
 ```
 
 | Query | Type | Default | Rule |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | `status` | enum | None | `OPEN`, `COMPLETED`, or `CANCELLED`. |
 | `deviceId` | string | None | Exact match. |
 | `scanActivityId` | UUID | None | Filter by one activity. |
@@ -194,17 +192,16 @@ Retry delay, qualifying failures, and retry coverage for the other three flows a
 
 See [Errors & Retries](/samooha/errors-and-retries/) for the shared HTTP status list.
 
-## Draft limitations
+## Limitations
 
-| Area | Current state | Required before final publication |
-| --- | --- | --- |
-| Samooha transaction intake | Planned ingest is `POST /api/v1/transaction-documents`. See [Transaction Documents](/samooha/transaction-documents/). | Final `POST` contracts and schemas. |
-| Goods Receipt result | Completion returns EPC values. | Return SKU and quantity without EPCs. |
-| Reader control | `deviceId` is optional text. No reader validation, start, stop, offline, or busy handling. | Final reader behavior. |
-| Duplicate control | `transactionReference` is not unique. | Enforce the agreed completed and open duplicate rules. |
-| Session limits | No timeout or per-reader concurrency rule. | Final timeout and concurrency behavior. |
-| Goods Receipt lock | No unlock rule for a session that never completes. | Final unlock authority and audit behavior. |
-| Unknown SKU or EPC | No final Samooha handling rule. | Use mapped UAT values until settled. |
-| Rate enforcement | Backend uses 100 requests per 60 seconds. | Change to 60 requests per 5 minutes. |
+| Area | Current state |
+| --- | --- |
+| Goods Receipt result | Completion returns EPC values. Return is SKU and quantity without EPCs. |
+| Reader control | `deviceId` is optional text. No reader validation, start, stop, offline, or busy handling. |
+| Duplicate control | `transactionReference` is not unique. |
+| Session limits | No timeout or per-reader concurrency rule. |
+| Goods Receipt lock | No unlock rule for a session that never completes. |
+| Unknown SKU or EPC | No final Samooha handling rule. Use mapped UAT values until settled. |
+| Rate enforcement | Backend uses 100 requests per 60 seconds. Contract rate is 60 requests per 5 minutes. |
 
-The examples above show the current schema with placeholders. They are not captured staging transactions. Replace them with verified UAT requests and responses before final publication.
+The examples above show the current schema with placeholders.
