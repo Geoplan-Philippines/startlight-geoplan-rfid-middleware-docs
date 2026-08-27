@@ -3,7 +3,7 @@ title: Samooha
 description: Samooha warehouse RFID integration with Geoplan.
 ---
 
-Samooha calls Geoplan over REST and HTTPS for four warehouse RFID flows. Geoplan manages scan sessions, EPC data, and EPC-to-SKU mapping. Samooha remains the source of transaction documents and owns inventory updates.
+Samooha POSTs GRN, CRN, GD, and VRN documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN. Geoplan manages scan sessions, EPC data, and EPC-to-SKU mapping. Samooha remains the source of transaction documents and owns inventory updates.
 
 The diagram shows the Samooha, warehouse, Geoplan middleware, and ON Principal connections:
 
@@ -13,22 +13,30 @@ The diagram shows the Samooha, warehouse, Geoplan middleware, and ON Principal c
 
 | Flow | Data exchange | Source document reference |
 | --- | --- | --- |
-| Goods Receipt | Samooha sends the document, then retrieves scanned quantity per SKU | Purchase Invoice |
-| Goods Delivery | Samooha sends the document | Sales Order |
-| Customer Returns | Samooha sends the document | Credit Note |
-| Vendor Returns | Samooha sends the document | Debit Note |
+| Goods Receipt | Samooha POSTs the document in a batch. After scan, Geoplan POSTs scanned quantity per SKU. | Purchase Invoice |
+| Goods Delivery | Samooha POSTs the document in a batch. No scan-result return leg. | Sales Order |
+| Customer Returns | Samooha POSTs the document in a batch. No scan-result return leg. | Credit Note |
+| Vendor Returns | Samooha POSTs the document in a batch. No scan-result return leg. | Debit Note |
 
 Goods Delivery, Customer Returns, and Vendor Returns have no scan-result return leg. Every request still receives an HTTP acknowledgement.
 
 RFID scope excludes put-away, picking, packing, stock transfer, and cycle count.
 
+## Process flow
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | Samooha | POST GRN, CRN, GD, and VRN documents in batches. |
+| 2 | Warehouse user | Pick a document on the Geoplan app and start the scan. |
+| 3 | Geoplan | POST scan results to Samooha only for GRN. |
+
 ## Integration rules
 
-- Samooha initiates every integration exchange. Geoplan does not expose webhooks.
+- Samooha initiates document ingest. Geoplan does not expose webhooks. Geoplan POSTs Goods Receipt results to Samooha's documented endpoint.
 - Transaction calls use `POST` for audit integrity.
 - Samooha filters transaction lines to RFID-enabled ON products.
 - Product identity in transaction lines is the SKU. Barcode, VPM code, and product details come from synced master data.
-- Geoplan returns SKU and scanned quantity for Goods Receipt. EPC values stay in Geoplan.
+- Geoplan POSTs SKU and scanned quantity to Samooha for Goods Receipt. EPC values stay in Geoplan.
 - One API key covers the Samooha integration within an environment.
 
 ## Integration order
@@ -37,6 +45,11 @@ RFID scope excludes put-away, picking, packing, stock transfer, and cycle count.
 | --- | --- |
 | [Authentication](/samooha/authentication/) | Send the integration API key |
 | [Master Data](/samooha/master-data/) | Load product data before transaction calls |
+| [Transaction Documents](/samooha/transaction-documents/) | Planned GRN, CRN, GD, and VRN ingest, and the live GRN result post |
 | [Scan Activities](/samooha/scan-activities/) | Use the four fixed activity IDs |
 | [Scan Sessions](/samooha/scan-sessions/) | Draft session API, flow rules, and known limitations |
 | [Errors & Retries](/samooha/errors-and-retries/) | HTTP status reference |
+
+## Unresolved
+
+[Scan Sessions](/samooha/scan-sessions/) currently says Samooha opens `POST /epc-scan-processing/sessions`. The 27 Aug Vic note says the warehouse user on the Geoplan app starts the scan. Both remain on the record. This page does not pick a side.

@@ -7,6 +7,10 @@ import { Steps } from '@astrojs/starlight/components';
 
 Samooha controls scan sessions through the Geoplan API. No Scan Sessions UI is required for this integration.
 
+## Unresolved scan start
+
+This page currently documents Samooha opening `POST /epc-scan-processing/sessions`. The 27 Aug Vic note says the warehouse user on the Geoplan app starts the scan. Both remain on the record. This page does not pick a side. See [Transaction Documents](/samooha/transaction-documents/).
+
 ## Connection
 
 | Item | Value |
@@ -194,7 +198,7 @@ See [Errors & Retries](/samooha/errors-and-retries/) for the shared HTTP status 
 
 | Area | Current state | Required before final publication |
 | --- | --- | --- |
-| Samooha transaction intake | No Goods Receipt, Goods Delivery, Customer Return, or Vendor Return document endpoints. | Final `POST` contracts and schemas. |
+| Samooha transaction intake | Planned ingest is `POST /api/v1/transaction-documents`. See [Transaction Documents](/samooha/transaction-documents/). | Final `POST` contracts and schemas. |
 | Goods Receipt result | Completion returns EPC values. | Return SKU and quantity without EPCs. |
 | Reader control | `deviceId` is optional text. No reader validation, start, stop, offline, or busy handling. | Final reader behavior. |
 | Duplicate control | `transactionReference` is not unique. | Enforce the agreed completed and open duplicate rules. |

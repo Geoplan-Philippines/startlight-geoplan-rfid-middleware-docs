@@ -34,6 +34,7 @@ export default defineConfig({
 						{ label: 'Overview', slug: 'samooha' },
 						{ label: 'Authentication', slug: 'samooha/authentication' },
 						{ label: 'Master Data', slug: 'samooha/master-data' },
+						{ label: 'Transaction Documents', slug: 'samooha/transaction-documents' },
 						{ label: 'Scan Activities', slug: 'samooha/scan-activities' },
 						{ label: 'Scan Sessions', slug: 'samooha/scan-sessions' },
 						{ label: 'Errors & Retries', slug: 'samooha/errors-and-retries' },

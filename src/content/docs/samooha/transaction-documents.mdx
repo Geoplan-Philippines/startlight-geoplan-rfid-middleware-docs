@@ -1,0 +1,94 @@
+---
+title: Transaction Documents
+description: Planned Samooha ingest of GRN, CRN, GD, and VRN documents, and the live GRN result post back to Samooha.
+---
+
+Samooha POSTs GRN, CRN, GD, and VRN documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN.
+
+## Process flow
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | Samooha | POST GRN, CRN, GD, and VRN documents in batches. |
+| 2 | Warehouse user | Pick a document on the Geoplan app and start the scan. |
+| 3 | Geoplan | POST scan results to Samooha only for GRN. |
+
+## Planned ingest
+
+Status: planned. This endpoint is not built yet.
+
+This is not [Scan Activities](/samooha/scan-activities/). That catalog is the superadmin list of activity code and name.
+
+```http
+POST https://api-stg-sling.rgoc.com.ph/api/v1/transaction-documents
+x-api-key: <api-key>
+Content-Type: application/json
+```
+
+```json
+{
+  "documents": [
+    {
+      "activity": "GRN",
+      "documentNumber": "PI-26084567",
+      "documentReference": "ASN-8891",
+      "partnerName": "On Running - SSI",
+      "warehouseCode": "WH01",
+      "lines": [
+        {
+          "sku": "RP80282244",
+          "quantity": 100
+        }
+      ]
+    }
+  ]
+}
+```
+
+`activity` is one of `GRN`, `CRN`, `GD`, or `VRN`.
+
+### Field map (FSD v1.2 §7)
+
+| Field | Meaning |
+| --- | --- |
+| `documentNumber` | PI/CN/SO/DN Doc # |
+| `documentReference` | PI/CN/SO/DN Ref # |
+| `partnerName` | Vendor Name for GRN/VRN. Customer Name for CRN/GD. |
+
+There is no `lineNumber`. One line per SKU. `quantity` is expected scan qty, not scanned qty.
+
+## Goods Receipt result
+
+Geoplan posts the scanned result to Samooha. Live spec: [Samooha RFID API](https://rmk.samooha.com/docs/v1/).
+
+```http
+POST /rfid/grn
+X-API-KEY: <api-key>
+Content-Type: application/json
+```
+
+```json
+{
+  "documentRef": "<document-reference>",
+  "lines": [
+    {
+      "sku": "RP80282244",
+      "quantity": 100
+    }
+  ]
+}
+```
+
+Success: `204`.
+
+## Unresolved discrepancies
+
+These points remain open. This page does not pick a side.
+
+| Topic | Current Starlight / live | 27 Aug / FSD |
+| --- | --- | --- |
+| Who starts the scan | [Scan Sessions](/samooha/scan-sessions/) says Samooha opens `POST /epc-scan-processing/sessions`. | Vic: warehouse user on the Geoplan app starts the scan. |
+| Activity identity | Scan Activities UUIDs and codes `GOODS_RECEIPT`, `GOODS_DELIVERY`, `CUSTOMER_RETURNS`, `VENDOR_RETURNS`. | Ingest activity `GRN`, `CRN`, `GD`, `VRN`. |
+| GRN result path | Live Samooha spec: `POST /rfid/grn`. | Meeting: `POST /rfid/gr`. |
+| Quantity floor | Live quantity min `1`. | FSD FR-IN-03 qty `0`. |
+| Master data direction | Current delta pull: Geoplan `GET`s products from Samooha. | FSD 3.3: Samooha pushes VPM. |
