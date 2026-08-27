@@ -15,13 +15,13 @@ Samooha POSTs GRN, CRN, GD, and VRN documents to Geoplan in batches. A warehouse
 
 ## Ingest
 
-This is not [Scan Activities](/samooha/scan-activities/). That catalog is the superadmin list of activity code and name.
-
 ```http
 POST https://api-stg-sling.rgoc.com.ph/api/v1/transaction-documents
 x-api-key: <api-key>
 Content-Type: application/json
 ```
+
+Request body:
 
 ```json
 {
@@ -43,15 +43,14 @@ Content-Type: application/json
 }
 ```
 
-`activity` is one of `GRN`, `CRN`, `GD`, or `VRN`.
+### Source fields
 
-### Field map
-
-| Field | Meaning |
-| --- | --- |
-| `documentNumber` | PI/CN/SO/DN Doc # |
-| `documentReference` | PI/CN/SO/DN Ref # |
-| `partnerName` | Vendor Name for GRN/VRN. Customer Name for CRN/GD. |
+| activity | documentNumber | documentReference | partnerName |
+| --- | --- | --- | --- |
+| GRN | PI Doc # | PI Ref # | Vendor Name |
+| CRN | CN Doc # | CN Ref # | Customer Name |
+| GD | SO Doc # | SO Ref # | Customer Name |
+| VRN | DN Doc # | DN Ref # | Vendor Name |
 
 There is no `lineNumber`. One line per SKU. `quantity` is expected scan qty, not scanned qty.
 
