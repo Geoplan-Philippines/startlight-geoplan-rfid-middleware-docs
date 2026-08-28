@@ -1,15 +1,15 @@
 ---
 title: Transaction Documents
-description: Samooha ingest of GRN, CRN, GD, and VRN documents, and the GRN result post back to Samooha.
+description: Samooha ingest of GR, CR, GD, and VR documents, and the GRN result post back to Samooha.
 ---
 
-Samooha POSTs GRN, CRN, GD, and VRN documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN.
+Samooha POSTs documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN.
 
 ## Process flow
 
 | Step | Actor | Action |
 | --- | --- | --- |
-| 1 | Samooha | POST GRN, CRN, GD, and VRN documents in batches. |
+| 1 | Samooha | POST documents in batches. |
 | 2 | Warehouse user | Pick a document on the Geoplan app and start the scan. |
 | 3 | Geoplan | POST scan results to Samooha only for GRN. |
 
@@ -27,11 +27,8 @@ Request body:
 {
   "documents": [
     {
-      "activity": "GRN",
-      "documentNumber": "PI-26084567",
+      "activityCode": "GR",
       "documentReference": "ASN-8891",
-      "partnerName": "On Running - SSI",
-      "warehouseCode": "WH01",
       "lines": [
         {
           "sku": "RP80282244",
@@ -45,14 +42,26 @@ Request body:
 
 ### Source fields
 
-| activity | documentNumber | documentReference | partnerName |
-| --- | --- | --- | --- |
-| GRN | PI Doc # | PI Ref # | Vendor Name |
-| CRN | CN Doc # | CN Ref # | Customer Name |
-| GD | SO Doc # | SO Ref # | Customer Name |
-| VRN | DN Doc # | DN Ref # | Vendor Name |
+| activityCode | documentReference |
+| --- | --- |
+| GR | PI Ref # |
+| CR | CN Ref # |
+| GD | SO Ref # |
+| VR | DN Ref # |
+
+`activityCode` is maintenance `activityCode`: `GR`, `GD`, `VR`, `CR`. [Scan Activities](/samooha/scan-activities/) lists `GOODS_RECEIPT`, `GOODS_DELIVERY`, `CUSTOMER_RETURNS`, `VENDOR_RETURNS`. No mapping in this contract.
 
 There is no `lineNumber`. One line per SKU. `quantity` is expected scan qty, not scanned qty.
+
+Response body (Geoplan house envelope, not a captured UAT payload; HTTP status to confirm):
+
+```json
+{
+  "statusCode": 201,
+  "message": "Success",
+  "data": {}
+}
+```
 
 ## Goods Receipt result
 
