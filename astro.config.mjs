@@ -25,10 +25,6 @@ export default defineConfig({
 					items: [{ label: 'Overview', link: '/' }],
 				},
 				{
-					label: 'ON Principal',
-					items: [{ label: 'Master Data Sync', slug: 'on-principal/master-data-sync' }],
-				},
-				{
 					label: 'Samooha',
 					items: [
 						{ label: 'Overview', slug: 'samooha' },

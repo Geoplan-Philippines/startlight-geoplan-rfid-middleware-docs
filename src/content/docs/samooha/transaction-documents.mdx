@@ -53,19 +53,27 @@ Request body:
 
 There is no `lineNumber`. One line per SKU. `quantity` is expected scan qty, not scanned qty.
 
-Response body (Geoplan house envelope, not a captured UAT payload; HTTP status to confirm):
+Response body:
 
 ```json
 {
   "statusCode": 201,
   "message": "Success",
-  "data": {}
+  "data": {
+    "documents": [
+      {
+        "activityCode": "GR",
+        "documentReference": "ASN-8891",
+        "status": "New"
+      }
+    ]
+  }
 }
 ```
 
 ## Status
 
-Allowed values: `New`, `In-Progress`, `Completed`, `Failed`. Field name and casing are not cited.
+Allowed values: `New`, `In-Progress`, `Completed`, `Failed`.
 
 ## Goods Receipt result
 
