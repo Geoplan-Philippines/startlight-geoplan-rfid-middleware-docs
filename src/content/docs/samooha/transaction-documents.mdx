@@ -5,14 +5,6 @@ description: Samooha ingest of GR, CR, GD, and VR documents, and the GRN result 
 
 Samooha POSTs documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN.
 
-## Process flow
-
-| Step | Actor | Action |
-| --- | --- | --- |
-| 1 | Samooha | POST documents in batches. |
-| 2 | Warehouse user | Pick a document on the Geoplan app and start the scan. |
-| 3 | Geoplan | POST scan results to Samooha only for GRN. |
-
 ## POST documents
 
 ```http
@@ -40,20 +32,7 @@ Request body:
 }
 ```
 
-### Source fields
-
-| activityCode | documentReference |
-| --- | --- |
-| GR | PI Ref # |
-| CR | CN Ref # |
-| GD | SO Ref # |
-| VR | DN Ref # |
-
-`activityCode` is maintenance `activityCode`: `GR`, `GD`, `VR`, `CR`. [Scan Activities](/samooha/scan-activities/) lists `GOODS_RECEIPT`, `GOODS_DELIVERY`, `CUSTOMER_RETURNS`, `VENDOR_RETURNS`. No mapping in this contract.
-
-There is no `lineNumber`. One line per SKU. `quantity` is expected scan qty, not scanned qty.
-
-Response body:
+Response:
 
 ```json
 {
@@ -71,10 +50,6 @@ Response body:
 }
 ```
 
-## Status
-
-Allowed values: `New`, `In-Progress`, `Completed`, `Failed`.
-
 ## Goods Receipt result
 
 Geoplan posts the scanned result to Samooha. Spec: [Samooha RFID API](https://rmk.samooha.com/docs/v1/).
@@ -85,16 +60,26 @@ X-API-KEY: <api-key>
 Content-Type: application/json
 ```
 
+Request body:
+
 ```json
 {
-  "documentRef": "<document-reference>",
+  "documentNo": "GRN-00001",
+  "documentSource": "PI-26084567",
   "lines": [
     {
       "sku": "RP80282244",
-      "quantity": 100
+      "quantity": "2"
     }
   ]
 }
 ```
 
-Success: `204`.
+Response:
+
+```json
+{
+  "code": "VALIDATION_FAILED",
+  "message": "The GRN document is already posted."
+}
+```
