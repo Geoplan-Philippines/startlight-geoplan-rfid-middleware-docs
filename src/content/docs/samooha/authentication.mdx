@@ -28,7 +28,7 @@ x-api-key: <api-key>
 Geoplan also supports bearer tokens. The agreed Samooha method is the API key.
 
 ```bash
-curl "https://api-stg-sling.rgoc.com.ph/api/v1/master-data-sync/status" \
+curl "https://api-stg-sling.rgoc.com.ph/api/v1/scan-activities?isActive=true" \
   --header "x-api-key: $SAMOOHA_API_KEY"
 ```
 

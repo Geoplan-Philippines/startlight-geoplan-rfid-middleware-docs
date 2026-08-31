@@ -17,16 +17,15 @@ Request body:
 
 ```json
 {
-  "documents": [
+  "activity": "GR",
+  "documentNo": "GRN-00001",
+  "documentSource": "PI-26084567",
+  "refNo": "ORFW26-310003494",
+  "whCode": "10000-09",
+  "lines": [
     {
-      "activityCode": "GR",
-      "documentReference": "ASN-8891",
-      "lines": [
-        {
-          "sku": "RP80282244",
-          "quantity": 100
-        }
-      ]
+      "sku": "RP80282244",
+      "quantity": "2"
     }
   ]
 }
@@ -41,8 +40,8 @@ Response:
   "data": {
     "documents": [
       {
-        "activityCode": "GR",
-        "documentReference": "ASN-8891",
+        "activity": "GR",
+        "documentNo": "GRN-00001",
         "status": "New"
       }
     ]
