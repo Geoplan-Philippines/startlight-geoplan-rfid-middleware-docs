@@ -9,10 +9,10 @@ Samooha POSTs VPM records to Geoplan in a batch. Each record has `operation`: `A
 
 Inventory balances and inventory rules stay in Samooha.
 
-## POST
+## POST deltas
 
 ```http
-POST https://api-stg-sling.rgoc.com.ph/api/v1/vpm
+POST https://api-stg-sling.rgoc.com.ph/api/v1/vpm-deltas
 x-api-key: <api-key>
 Content-Type: application/json
 ```
@@ -33,7 +33,8 @@ Request body:
   },
   {
     "operation": "DELETE",
-    "vpmCode": "ON-VPM-002"
+    "vpmCode": "ON-VPM-002",
+    "skuCode": "RP80282244"
   }
 ]
 ```
@@ -47,11 +48,13 @@ Response:
   "data": [
     {
       "operation": "edit",
-      "vpmCode": "ON-VPM-001"
+      "vpmCode": "ON-VPM-001",
+      "skuCode": "RP80282244"
     },
     {
       "operation": "delete",
-      "vpmCode": "ON-VPM-002"
+      "vpmCode": "ON-VPM-002",
+      "skuCode": "RP80282244"
     }
   ]
 }
